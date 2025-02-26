@@ -12,10 +12,34 @@ import { fetchCategories, fetchProductsByCatID, fetchTrendingProducts } from "..
 import { useFocusEffect } from "@react-navigation/native";
 import { Pressable } from "react-native";
 import { Alert } from "react-native";
+import { useSelector } from "react-redux";
+import { CartState } from "../TypesCheck/productCartTypes";
+import DisplayMessage from "../Components/HeaderComponent/DisplayMessage";
 
 const HomeScreen = ({ navigation, route }: TabsStackScreenProps<"Home">) => {
+  
+  const cart = useSelector((state: CartState) => state.cart.cart);
   const gotoCartScreen = () => {
-    navigation.navigate("Cart");
+    if (cart.length === 0) {
+      setMessage('Cart is empty. Please add products to cart.');
+      setDisplayMessage(true);
+      setTimeout(() => {
+        setDisplayMessage(false);
+      }, 3000);
+    } else {
+      navigation.navigate('Home');
+    }
+  };
+
+  // Hàm quay lại màn hình trước hoặc về Home
+  const gotoPreviousScreen = () => {
+    if (navigation.canGoBack()) {
+      console.log('Chuyển về trang trước.');
+      navigation.goBack();
+    } else {
+      console.log('Không thể quay lại, chuyển về trang Home.');
+      navigation.navigate('Home');
+    }
   };
 
   const bgImg = "";
@@ -23,6 +47,8 @@ const HomeScreen = ({ navigation, route }: TabsStackScreenProps<"Home">) => {
     "https://hoanghamobile.com/tin-tuc/wp-content/uploads/2024/02/tim-hinh-anh-dep.jpg",
     "https://bizflyportal.mediacdn.vn/thumb_wm/1000,100/bizflyportal/images/kic16201998282410.jpg",
   ];
+const [message, setMessage] = useState("");
+const [displayMessage, setDisplayMessage] = useState<boolean>(false)
 
   const [getCategory, setGetCategory] = useState<ProductListParams[]>([]);
   const [getProductsByCatID, setGetProductsByCatID] = useState<ProductListParams[]>([]);
@@ -52,7 +78,7 @@ const HomeScreen = ({ navigation, route }: TabsStackScreenProps<"Home">) => {
 
   return (
     <SafeAreaView style={{ paddingTop: Platform.OS === "android" ? 40 : 0, flex: 1, backgroundColor: "white" }}>
-      {/* Đặt HeadersComponent lên đầu để hiển thị search bar trên cùng */}
+  {displayMessage && <DisplayMessage message={message} visible={() => setDisplayMessage(!displayMessage)} />}
       <HeadersComponent gotoCartScreen={gotoCartScreen} />
 
       {/* Nội dung chính nằm trong ScrollView để cuộn */}
@@ -197,7 +223,7 @@ const HomeScreen = ({ navigation, route }: TabsStackScreenProps<"Home">) => {
                  name: item.name,
                  images: item.images,
                  price: item.price,
-                 // Thêm các optional params nếu có
+            
                  oldPrice: item.oldPrice,
                  inStock: item.inStock,
                  color: item.color,

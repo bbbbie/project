@@ -14,7 +14,7 @@ export type RootStackParams = {
   OnboardingScreen: undefined;
   TabsStack: NavigatorScreenParams<TabsStackParams>;
   Deals: undefined;
-  Cart: undefined;
+  
   Profile: undefined;
   ProductDetails: {
     _id: string;
@@ -28,6 +28,18 @@ export type RootStackParams = {
     description?: string;
     quantity?: number;
   };
+
+  cart: {
+    _id: string;
+    images: string[];
+    name: string;
+    price: number;
+   
+    color?: string;
+    size?: string;
+    
+    quantity?: number;
+  }
 };
 
 const RootStack = createNativeStackNavigator<RootStackParams>();

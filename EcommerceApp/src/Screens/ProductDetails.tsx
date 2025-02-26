@@ -1,8 +1,13 @@
 import { View, Image, Text, Platform, ScrollView, Dimensions, Pressable, Alert, SafeAreaView, ImageBackground } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import { RootStackParams, RootStackScreenProps } from '../Navigation/RootNavigator';
 import { AntDesign, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { HeadersComponent } from '../Components/HeaderComponent/HeaderComponent';
+import { useDispatch, useSelector } from 'react-redux';
+import { CartState } from '../TypesCheck/productCartTypes';
+import { ProductListParams } from '../TypesCheck/HomeProps';
+import { addToCart } from '../redux/CartReducer';
+import DisplayMessage from '../Components/HeaderComponent/DisplayMessage';
 
 // Mở rộng kiểu TextStyle nếu cần
 declare module 'react-native' {
@@ -18,7 +23,15 @@ const ProductDetails = ({ navigation, route }: RootStackScreenProps<"ProductDeta
   const { _id, images, name, price, oldPrice, inStock, color, size, description, quantity } = route.params;
 
   const gotoCartScreen = () => {
-    navigation.navigate("Cart");
+    if (cart.length === 0) {
+      setMessage('Cart is empty. Please add products to cart.');
+      setDisplayMessage(true);
+      setTimeout(() => {
+        setDisplayMessage(false);
+      }, 3000);
+    } else {
+      navigation.navigate('TabsStack', { screen: 'Cart' });
+    }
   };
 
   const gotoPreviousScreen = () => {
@@ -36,17 +49,61 @@ const ProductDetails = ({ navigation, route }: RootStackScreenProps<"ProductDeta
     if (!text) return "No description available";
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
   };
+  console.log("Route Params:", route.params);
+  
 
+const cart = useSelector((state:CartState)=> state.cart.cart)
+const dispatch = useDispatch();
+const [addedToCart, setAddedToCart] = useState(false);
+const [message, setMessage] = useState("");
+const [displayMessage, setDisplayMessage] = useState<boolean>(false)
+
+const addItemTocart = (ProductItemObj:ProductListParams)=> {
+  if (ProductItemObj.quantity < 1) {
+
+  }
+  
+}
+
+const addItemToCart = (ProductItemObj: ProductListParams) =>
+   {
+  if (ProductItemObj.quantity !== undefined && ProductItemObj.quantity < 0) {
+    setMessage('Product is out of stock.');
+    setDisplayMessage(true);
+    setTimeout(() => {
+      setDisplayMessage(false);
+    }, 3000);
+  } else {
+    const findItem = cart.find((product) => product._id === _id);
+    if (findItem) {
+      setMessage('Product is already in cart.');
+      setDisplayMessage(true);
+      setTimeout(() => {
+        setDisplayMessage(false);
+      }, 3000);
+    } else {
+      setAddedToCart(!addedToCart);
+      dispatch(addToCart(ProductItemObj));
+      setMessage('Product added to cart successfully.');
+      setDisplayMessage(true);
+      setTimeout(() => {
+        setDisplayMessage(false);
+      }, 3000);
+    }
+  }
+}
   return (
     <SafeAreaView style={{ paddingTop: Platform.OS === "android" ? 20 : 0, flex: 1, backgroundColor: "white" }}>
-      <HeadersComponent gotoCartScreen={gotoCartScreen} gotoPrevious={gotoPreviousScreen} />
+      {displayMessage&&<DisplayMessage message='message' visible={()=>setDisplayMessage (!displayMessage)}/>}
+      <HeadersComponent gotoCartScreen={gotoCartScreen} cartLength={ cart.length} gotoPrevious={gotoPreviousScreen} />
       <ScrollView showsVerticalScrollIndicator={false} style={{ backgroundColor: "#F5E8F5" }}> {/* Màu hồng nhạt giống ảnh */}
         <ImageBackground style={{ width, height: 300, marginTop: 10 }}> {/* Giảm height để phù hợp với ảnh */}
           <View style={{ padding: 3, flexDirection: "row", alignItems: "center", justifyContent: "space-between", position: "absolute", top: 10, left: 10, right: 10 }}>
             <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "#60C3C3", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
             <Text style={{ color: "yellow", textAlign: "center", fontWeight: "600", fontSize: 12 }}>
-  {oldPrice ? (((oldPrice - price) / oldPrice) * 100).toFixed(1) : 0}% off
+  {oldPrice ? `${(((Number(oldPrice) - Number(price)) / Number(oldPrice)) * 100).toFixed(1)}% off` : "0% off"}
 </Text>
+
             </View>
             <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "#E0E0E0", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
               <MaterialCommunityIcons name="share-variant" size={25} color="green" />
@@ -72,9 +129,10 @@ const ProductDetails = ({ navigation, route }: RootStackScreenProps<"ProductDeta
           <Text style={{ fontSize: 14, color: "red" }}>Delivery is Available</Text>
           <View style={{ flexDirection: "row", alignItems: "center", marginTop: 5, flexWrap: "wrap" }}> {/* Thêm flexWrap để xử lý text dài */}
             <Ionicons name="location-sharp" size={25} color="green" />
-            <Text style={{ fontSize: 14, color: "brown", marginLeft: 5, numberOfLines: 2, ellipsisMode: "tail" }}>
-              Delivery to: CAMPUS THANH THAI 7/1 Thanh Thai, Ward 12, Ho Chi Minh City
-            </Text>
+            <Text style={{ fontSize: 14, color: "brown", marginLeft: 5 }} numberOfLines={2} ellipsizeMode="tail">
+  Delivery to: CAMPUS THANH THAI 7/1 Thanh Thai, Ward 12, Ho Chi Minh City
+</Text>
+
           </View>
         </View>
         <View style={{ backgroundColor: "#F5E8F5", borderColor: "purple", borderWidth: 2, margin: 10, padding: 10, borderRadius: 10 }}>

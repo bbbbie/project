@@ -9,7 +9,7 @@ export interface ProductListParams {
     color?: string;
     size?: string;
     description?: string;
-    quantity?: number;
+    quantity: number;
 }
 
 export interface FetchProductsParams {

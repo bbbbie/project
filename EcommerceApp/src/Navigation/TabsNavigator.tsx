@@ -12,6 +12,17 @@ export type TabsStackParams = {
     Cart: undefined;
     Payment: undefined;
     Profile: undefined;
+    cart: {
+      _id?: string;
+      images?: string[];
+      name: string;
+      price: number;
+     
+      color?: string;
+      size?: string;
+      
+      quantity?: number;
+    }
 }
 
 const TabsStack = createBottomTabNavigator<TabsStackParams>();
