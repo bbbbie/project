@@ -3,8 +3,9 @@ import { StyleSheet, Text, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import RootNavigator from "./src/Navigation/RootNavigator";
 import { Provider } from "react-redux";
-import { persistor, store } from "./store";
+
 import { PersistGate } from "redux-persist/integration/react";
+import { persistor, store } from "./Store";
 
 export default function App() {
   return (

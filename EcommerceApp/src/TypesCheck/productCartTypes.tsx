@@ -1,7 +1,7 @@
 
 export interface ProductListParams {
     _id: string;
-    images: [string];
+    images: string[];
     name: string;
     category?: string;
     price: number
@@ -10,15 +10,16 @@ export interface ProductListParams {
     color?: string;
     size?: string;
     description?: string;
-    quantity?: number
+    quantity: number
 }
 
 export interface CartItem {
-   cart:ProductListParams[]
-}
+    cart: ProductListParams[]
+    length: number
+ }
 export interface CartState {
     cart: {
-       cart: ProductListParams[];
+       cart: ProductListParams[]
        length: number
     }
 }

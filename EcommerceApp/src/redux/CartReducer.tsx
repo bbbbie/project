@@ -1,42 +1,45 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ProductListParams, CartItem, CartState } from "../TypesCheck/productCartTypes";
+import { CartItem, ProductListParams } from "../TypesCheck/productCartTypes";
 
 export const CartSlide = createSlice({
-  name: "cart",
-  initialState: {
-    cart: [],
-    length: 0,
-  },
-  reducers: {
-    addToCart: (state: CartItem, action: PayloadAction<ProductListParams>) => {
-      const existingItem = state.cart.find((item) => item._id === action.payload._id);
-      if (!existingItem) {
-        state.cart.push({ ...action.payload, quantity: 1 }); //Thêm quantity khi thêm sản phẩm mới
-       
-      }
+    name: "cart",
+    initialState: {
+        cart: [] as ProductListParams[],
+        length: 0,
+    } as CartItem,
+    reducers: {
+        addToCart: (state: CartItem, action: PayloadAction<ProductListParams>) => {
+            const existingItem = state.cart.find(item => item._id === action.payload._id);
+            if (!existingItem) {
+                state.cart.push({ ...action.payload, quantity: 1 });
+                state.length = state.cart.length;
+            }
+        },
+        increaseQuantity: (state: CartItem, action: PayloadAction<ProductListParams>) => {
+            const existingItem = state.cart.find((item) => item._id === action.payload._id);
+            if (existingItem) {
+                existingItem.quantity++;
+            }
+        },
+        decreaseQuantity: (state: CartItem, action: PayloadAction<ProductListParams>) => {
+            const getItem = state.cart.find((item) => item._id === action.payload._id);
+            if (getItem && getItem.quantity > 1) { // Prevent quantity from going below 1
+                getItem.quantity--;
+            } else if (getItem && getItem.quantity === 1) {
+                // Optionally remove the item if quantity reaches 0
+                state.cart = state.cart.filter((item) => item._id !== action.payload._id);
+                state.length = state.cart.length;
+            }
+        },
+        removeFromCart: (state: CartItem, action: PayloadAction<string>) => { // Change payload to string (_id)
+            state.cart = state.cart.filter((item) => item._id !== action.payload);
+            state.length = state.cart.length;
+        },
+        clearCart: (state) => {
+            state.cart = [];
+            state.length = 0;
+        },
     },
-    increaseQuantity: (state: CartItem, action: PayloadAction<ProductListParams>) => {
-      const existingItem = state.cart.find((item) => item._id === action.payload._id);
-      if (existingItem) {
-        existingItem.quantity = (existingItem.quantity || 0) + 1; // Xử lý trường hợp quantity undefined
-      }
-    },
-    decreaseQuantity: (state: CartItem, action: PayloadAction<ProductListParams>) => {
-      const existingItem = state.cart.find((item) => item._id === action.payload._id);
-      if (existingItem && existingItem.quantity && existingItem.quantity > 1) {
-        existingItem.quantity--; // Giảm quantity chỉ khi > 1
-      }
-    },
-    removeFromCart: (state: CartItem, action: PayloadAction<string>) => {
-      const removeItem = state.cart.filter((item) => item._id !== action.payload);
-      state.cart = removeItem;
-     
-    },
-    clearCart: (state) => {
-      state.cart = [];
-     
-    },
-  },
 });
 
 export const { addToCart, increaseQuantity, decreaseQuantity, removeFromCart, clearCart } = CartSlide.actions;

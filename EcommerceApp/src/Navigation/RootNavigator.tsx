@@ -26,7 +26,7 @@ export type RootStackParams = {
     color?: string;
     size?: string;
     description?: string;
-    quantity?: number;
+    quantity: number;
   };
 
   cart: {

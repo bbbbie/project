@@ -1,7 +1,8 @@
 import { View, Text, Pressable, ImageBackground, Image, TouchableOpacity, StyleSheet, } from 'react-native'
 import React from 'react'
 import { ICatProps } from '../../TypesCheck/CategoryTypes'
-//wifi truong 10.106.20.172
+//wifi truong 10. 106.20.172
+//wifi nha 192.168.1.17
 export const CategoryCard = ({ item, catProps, catStyleProps }: ICatProps) => {
     let isActive = item._id == catProps.activeCat;
     let activeButtonClass = isActive ? "orange" : "#eee";
@@ -18,7 +19,7 @@ export const CategoryCard = ({ item, catProps, catStyleProps }: ICatProps) => {
                             style={styl(catStyleProps.imageBgHt).imageBg}
                         >
                             <Image
-                                source={{ uri: item?.images[0].replace("localhost", "10.106.20.172") }}
+                                source={{ uri: item?.images[0].replace("localhost", "192.168.1.17") }}
                                 style={sty(catStyleProps.width, catStyleProps.height, catStyleProps.radius).imgStyleProps}
                                 resizeMode={catStyleProps?.resizeMode}
                                 onError={(e) => console.log(`Image load error for ${item?.images[0]}:`, e.nativeEvent)}
@@ -36,7 +37,7 @@ export const CategoryCard = ({ item, catProps, catStyleProps }: ICatProps) => {
                 >
                     <View style={st.imageContainer}>
                         <Image
-                            source={{ uri: item?.images[0].replace("localhost", "10.106.20.172") }}
+                            source={{ uri: item?.images[0].replace("localhost", "192.168.1.17") }}
                             style={sty(catStyleProps.width, catStyleProps.height, catStyleProps.radius).imgStyleProps}
                             resizeMode={catStyleProps?.resizeMode}
                             onError={(e) => console.log(`Image load error for ${item?.images[0]}:`, e.nativeEvent)}

@@ -2,7 +2,7 @@ export interface IProductProps {
     item: {
         _id: string;
         name: string;
-        images: [string];
+        images: string[];
         price: number;
         quantity?: number;
     };

@@ -15,13 +15,13 @@ export type TabsStackParams = {
     cart: {
       _id?: string;
       images?: string[];
-      name: string;
-      price: number;
-     
-      color?: string;
-      size?: string;
-      
+      name?: string;
+      price?: number;
+      oldPrice?: number;
+      description?: string;
+      instock?: boolean;
       quantity?: number;
+      
     }
 }
 
@@ -48,7 +48,7 @@ const TabsNavigator = () => {
         />
 
         <TabsStack.Screen
-          name="Cart"
+          name="cart"
           component={CartScreen}
           options={{
             headerShown: false,

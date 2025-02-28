@@ -1,7 +1,7 @@
 
 export interface ProductListParams {
     _id: string;
-    images: [string];
+    images: string[];
     name: string;
     price: number;
     oldPrice?: number;

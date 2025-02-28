@@ -2,7 +2,7 @@ export interface ICatProps {
     item: {
         _id: string;
         name: string;
-        images: [string];
+        images: string[];
     };
     catProps: {
         imageBg?: string;

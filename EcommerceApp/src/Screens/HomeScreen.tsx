@@ -176,66 +176,66 @@ const [displayMessage, setDisplayMessage] = useState<boolean>(false)
 
         {/* Trending Deals of the Week Section */}
         <View style={{ 
-          backgroundColor: "purple", 
-          flexDirection: "row", 
-          justifyContent: "space-between", 
-          marginTop: 10 
-        }}>
-          <Text style={{ 
-            color: "yellow", 
-            fontSize: 14, 
-            fontWeight: "bold", 
-            padding: 10 
-          }}>
-            Trending Deals of the Week
-          </Text>
-        </View>
+  backgroundColor: "purple", 
+  flexDirection: "row", 
+  justifyContent: "space-between", 
+  marginTop: 10 
+}}>
+  <Text style={{ 
+    color: "yellow", 
+    fontSize: 14, 
+    fontWeight: "bold", 
+    padding: 10 
+  }}>
+    Trending Deals of the Week
+  </Text>
+</View>
 
-        <View style={{ 
-          backgroundColor: "#fff", 
-          borderWidth: 7, 
-          borderColor: "green", 
-          flexDirection: "row", 
-          justifyContent: "space-between", 
-          alignItems: "center", 
-          flexWrap: "wrap" 
-        }}>
-          {trendingProducts.map((item, index) => (
-           <ProductCard
-           key={index}
-           item={{
-             _id: item._id || index.toString(),
-             name: item.name || "No Name",
-             images: item.images || ["No Image"],
-             price: item.price || 0,
-           }}
-           pStyleProps={{
-             resizeMode: "contain",
-             width: productWidth,
-             height: 90,
-             marginBottom: 5,
-           }}
-           productProps={{
-             imageBg: bgImg,
-             onPress: () => {
-               navigation.navigate("ProductDetails", {
-                 _id: item._id,
-                 name: item.name,
-                 images: item.images,
-                 price: item.price,
-            
-                 oldPrice: item.oldPrice,
-                 inStock: item.inStock,
-                 color: item.color,
-                 size: item.size,
-                 description: item.description|| "No description available",
-                 quantity: item.quantity
-               });
-             }
-           }}
-         />
-          ))}
-        </View>
+<View style={{ 
+  backgroundColor: "#fff", 
+  borderWidth: 7, 
+  borderColor: "green", 
+  flexDirection: "row", 
+  justifyContent: "flex-start", // Changed to "flex-start"
+  alignItems: "center", 
+  flexWrap: "wrap" 
+}}>
+  {trendingProducts.map((item, index) => (
+    <ProductCard
+      key={index}
+      item={{
+        _id: item._id || index.toString(),
+        name: item.name || "No Name",
+        images: item.images || ["No Image"],
+        price: item.price || 0,
+      }}
+      pStyleProps={{
+        resizeMode: "contain",
+        width: productWidth,
+        height: 90,
+        marginBottom: 5,
+        marginHorizontal: 5, // Add margin for consistent spacing
+      }}
+      productProps={{
+        imageBg: bgImg,
+        onPress: () => {
+          navigation.navigate("ProductDetails", {
+            _id: item._id,
+            name: item.name,
+            images: item.images,
+            price: item.price,
+            oldPrice: item.oldPrice,
+            inStock: item.inStock,
+            color: item.color,
+            size: item.size,
+            description: item.description || "No description available",
+            quantity: item.quantity,
+          });
+        },
+      }}
+    />
+  ))}
+</View>
       </ScrollView>
     </SafeAreaView>
   );

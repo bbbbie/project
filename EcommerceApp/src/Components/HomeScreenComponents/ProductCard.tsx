@@ -19,7 +19,7 @@ export const ProductCard = ({ item, productProps, pStyleProps }: IProductProps) 
           style={{ alignItems: "center" }}
         >
           <Image
-            source={{ uri: item?.images[0]?.replace("localhost", "10.106.20.172") }} 
+            source={{ uri: item?.images[0]?.replace("localhost", "192.168.1.17") }} 
             style={{
               resizeMode: pStyleProps?.resizeMode,
               height: "100%",
