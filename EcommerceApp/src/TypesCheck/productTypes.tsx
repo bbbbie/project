@@ -18,5 +18,6 @@ export interface IProductProps {
         marginHorizontal?: number;
         marginBottom?: number;
         resizeMode?: "contain" | "cover" | "stretch";
+        marginRight?: number;
     };
 }

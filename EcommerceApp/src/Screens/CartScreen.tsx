@@ -1,4 +1,5 @@
-import { View, Text, Platform, FlatList, Image, Pressable, StyleSheet } from 'react-native';
+// Screens/CartScreen.tsx
+import { View, Text, Platform, FlatList, Image, Pressable, StyleSheet, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { HeadersComponent } from '../Components/HeaderComponent/HeaderComponent';
@@ -8,6 +9,7 @@ import { TabsStackScreenProps } from '../Navigation/TabsNavigator';
 import DisplayMessage from '../Components/HeaderComponent/DisplayMessage';
 import { ProductListParams } from '../TypesCheck/HomeProps';
 import { increaseQuantity, decreaseQuantity, removeFromCart, clearCart } from '../redux/CartReducer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CartScreen = ({ navigation, route }: TabsStackScreenProps<'Cart'>) => {
   const gotoCartScreen = () => {
@@ -71,6 +73,33 @@ const CartScreen = ({ navigation, route }: TabsStackScreenProps<'Cart'>) => {
   const handleDecreaseQuantity = (item: ProductListParams) => {
     dispatch(decreaseQuantity(item));
   };
+
+  // Xử lý nút "Proceed to Buy"
+ // Screens/CartScreen.tsx (chỉ sửa handleProceedToBuy)
+const handleProceedToBuy = async () => {
+  if (cart.length === 0) {
+    setMessage('Cart is empty. Please add products to cart.');
+    setDisplayMessage(true);
+    setTimeout(() => {
+      setDisplayMessage(false);
+    }, 3000);
+    return;
+  }
+
+  try {
+    const token = await AsyncStorage.getItem('token');
+    console.log('Token:', token); // Debug
+    if (token) {
+      console.log('User is logged in. Proceed to buy logic can be added here.');
+    } else {
+      console.log('Navigating to UserLogin');
+      navigation.navigate('UserLogin'); // Không cần params
+    }
+  } catch (error) {
+    console.error('Error checking login status:', error);
+    Alert.alert('Error', 'Something went wrong. Please try again.');
+  }
+};
 
   // Render mỗi item trong giỏ hàng
   const renderCartItem = ({ item }: { item: ProductListParams }) => (
@@ -156,6 +185,9 @@ const CartScreen = ({ navigation, route }: TabsStackScreenProps<'Cart'>) => {
             <Pressable style={styles.clearButton} onPress={handleClearCart}>
               <Text style={styles.clearButtonText}>Clear All</Text>
             </Pressable>
+            <Pressable style={styles.proceedButton} onPress={handleProceedToBuy}>
+              <Text style={styles.proceedButtonText}>Proceed to Buy</Text>
+            </Pressable>
           </View>
         </View>
       )}
@@ -166,7 +198,7 @@ const CartScreen = ({ navigation, route }: TabsStackScreenProps<'Cart'>) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5', // Light gray background for a modern look
+    backgroundColor: '#f5f5f5',
     paddingTop: Platform.OS === 'android' ? 0 : 0,
   },
   emptyCartContainer: {
@@ -184,7 +216,7 @@ const styles = StyleSheet.create({
   },
   cartList: {
     paddingHorizontal: 15,
-    paddingBottom: 150, // Extra padding to avoid overlap with the summary section
+    paddingBottom: 220, // Tăng padding để chứa nút Proceed to Buy
   },
   cartItem: {
     flexDirection: 'row',
@@ -192,8 +224,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     marginVertical: 5,
-    elevation: 2, // Shadow for Android
-    shadowColor: '#000', // Shadow for iOS
+    elevation: 2,
+    shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 },
@@ -221,7 +253,7 @@ const styles = StyleSheet.create({
   itemTotal: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#2ecc71', // Green for total
+    color: '#2ecc71',
   },
   itemActions: {
     justifyContent: 'space-between',
@@ -232,7 +264,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   quantityButton: {
-    backgroundColor: '#3498db', // Blue buttons for quantity controls
+    backgroundColor: '#3498db',
     borderRadius: 5,
     width: 30,
     height: 30,
@@ -251,7 +283,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   removeButton: {
-    backgroundColor: '#e74c3c', // Red button for remove
+    backgroundColor: '#e74c3c',
     borderRadius: 5,
     paddingVertical: 5,
     paddingHorizontal: 10,
@@ -290,16 +322,28 @@ const styles = StyleSheet.create({
   summaryValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#2ecc71', // Green for values
+    color: '#2ecc71',
   },
   clearButton: {
-    backgroundColor: '#e74c3c', // Red button for clear all
+    backgroundColor: '#e74c3c',
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
     marginTop: 10,
   },
   clearButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  proceedButton: {
+    backgroundColor: '#2ecc71', // Green button for Proceed to Buy
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  proceedButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',

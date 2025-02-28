@@ -48,7 +48,7 @@ const TabsNavigator = () => {
         />
 
         <TabsStack.Screen
-          name="cart"
+          name="Cart"
           component={CartScreen}
           options={{
             headerShown: false,
