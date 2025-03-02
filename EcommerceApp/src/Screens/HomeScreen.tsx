@@ -10,10 +10,11 @@ import { ProductListParams } from "../TypesCheck/HomeProps";
 import { fetchCategories, fetchProductsByCatID, fetchTrendingProducts, fetchAllProducts } from "../MiddeleWares/HomeMiddeWare";
 import { useFocusEffect } from "@react-navigation/native";
 import { Pressable } from "react-native";
-import { Alert } from "react-native";
 import { useSelector } from "react-redux";
 import { CartState } from "../TypesCheck/productCartTypes";
 import DisplayMessage from "../Components/HeaderComponent/DisplayMessage";
+import { StyleSheet } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
   const cart = useSelector((state: CartState) => state.cart.cart);
@@ -39,13 +40,15 @@ const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
   const [trendingProducts, setTrendingProducts] = useState<ProductListParams[]>([]);
   const [allProducts, setAllProducts] = useState<ProductListParams[]>([]);
   const [activeCat, setActiveCat] = useState<string>("");
-  const [searchInput, setSearchInput] = useState<string>(""); // State for search query
-  const [filteredProducts, setFilteredProducts] = useState<ProductListParams[]>([]); // State for filtered products
+  const [searchInput, setSearchInput] = useState<string>("");
+  const [filteredProducts, setFilteredProducts] = useState<ProductListParams[]>([]);
 
   const screenWidth = Dimensions.get("screen").width;
-  const spacing = 12;
-  const containerPadding = 20;
-  const productWidth = (screenWidth - containerPadding - (spacing * 2)) / 3;
+  const containerPadding = 15;
+  const horizontalSpacing = 10;
+  const cardsPerRow = 2;
+  const totalHorizontalSpacing = horizontalSpacing * (cardsPerRow - 1);
+  const productWidth = (screenWidth - containerPadding * 2 - totalHorizontalSpacing) / cardsPerRow;
 
   useEffect(() => {
     fetchCategories({ setGetCategory });
@@ -61,15 +64,14 @@ const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
     }
   }, [activeCat, allProducts]);
 
-  // Filter products based on search query
   useEffect(() => {
     if (searchInput.trim() === "") {
-      setFilteredProducts(getProductsByCatID); // If search query is empty, show all products
+      setFilteredProducts(getProductsByCatID);
     } else {
       const filtered = getProductsByCatID.filter((product) =>
         product.name?.toLowerCase().includes(searchInput.toLowerCase())
       );
-      setFilteredProducts(filtered); // Update filtered products based on search
+      setFilteredProducts(filtered);
     }
   }, [searchInput, getProductsByCatID]);
 
@@ -91,40 +93,47 @@ const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
     }
   };
 
-  // Optional: Function to trigger search explicitly (if needed)
   const handleSearch = () => {
-    // The filtering already happens in the useEffect, but you can add additional logic here if needed
     console.log("Search triggered with query:", searchInput);
   };
 
-  return (
-    <SafeAreaView style={{ paddingTop: Platform.OS === "android" ? 40 : 0, flex: 1, backgroundColor: "white" }}>
-      {displayMessage && <DisplayMessage message={message} visible={() => setDisplayMessage(!displayMessage)} />}
-      <HeadersComponent
-        gotoCartScreen={gotoCartScreen}
-        cartLength={cart.length} // Pass the cart length to display the badge
-        search={handleSearch} // Pass the search handler
-        searchInput={searchInput} // Pass the search query
-        setSearchInput={setSearchInput} // Pass the function to update the search query
-      />
+  const handleSeeAll = () => {
+    // Nếu có activeCat, truyền sản phẩm của danh mục đó; nếu không, truyền tất cả sản phẩm
+    const productsToShow = activeCat ? getProductsByCatID : allProducts;
+    navigation.navigate("AllProducts", { products: productsToShow });
+  };
 
-      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      {displayMessage && <DisplayMessage message={message} visible={() => setDisplayMessage(!displayMessage)} />}
+      <LinearGradient
+        colors={["#ff6f61", "#ff9a8b"]}
+        style={styles.headerGradient}
+      >
+        <HeadersComponent
+          gotoCartScreen={gotoCartScreen}
+          cartLength={cart.length}
+          search={handleSearch}
+          searchInput={searchInput}
+          setSearchInput={setSearchInput}
+        />
+      </LinearGradient>
+
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
         {/* Image Slider */}
-        <View style={{ backgroundColor: "#efefef", paddingVertical: 10 }}>
+        <View style={styles.sliderContainer}>
           <ImageSlider images={sliderImages} />
         </View>
 
-        <View style={{ backgroundColor: "#eee", borderWidth: 3, borderColor: "#fff", height: 5 }} />
-
         {/* Categories Section */}
-        <View style={{ paddingHorizontal: 10, marginTop: 10 }}>
-          <Text style={{ fontSize: 20, fontWeight: '600', marginBottom: 5, color: '#1a1a1a' }}>Categories</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View style={styles.categorySection}>
+          <Text style={styles.sectionTitle}>Explore Categories</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
             {getCategory.map((item, index) => (
               <CategoryCard
                 key={index}
                 item={{ name: item.name, images: item.images, _id: item._id }}
-                catStyleProps={{ height: 35, width: 40, radius: 20, resizeMode: "contain" }}
+                catStyleProps={{ height: 50, width: 50, radius: 25, resizeMode: "cover" }}
                 catProps={{ activeCat: activeCat, onPress: () => toggleCategory(item._id) }}
               />
             ))}
@@ -132,51 +141,79 @@ const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
         </View>
 
         {/* Products Section */}
-        <View style={{ marginTop: 15, paddingHorizontal: 10 }}>
-          <View
-            style={{
-              backgroundColor: '#ff5733',
-              flexDirection: "row",
-              justifyContent: "space-between",
-              paddingHorizontal: 10,
-              paddingVertical: 8,
-              borderTopLeftRadius: 12,
-              borderTopRightRadius: 12,
-            }}
-          >
-            <Text style={{ fontSize: 16, fontWeight: "600", color: "white" }}>
-              {activeCat ? "Products from Selected Category" : "All Products"}
+        <View style={styles.productsSection}>
+          <LinearGradient colors={["#4facfe", "#00f2fe"]} style={styles.sectionHeader}>
+            <Text style={styles.headerText}>
+              {activeCat ? "Category Highlights" : "Featured Products"}
             </Text>
-            <Pressable onPress={() => Alert.alert("See All pressed - Implement navigation here!")}>
-              <Text style={{ fontSize: 12, fontWeight: "600", color: "white" }}>See All</Text>
+            <Pressable onPress={handleSeeAll}>
+              <Text style={styles.seeAll}>View All</Text>
             </Pressable>
-          </View>
-          <View
-            style={{
-              backgroundColor: "#fff",
-              borderWidth: 0,
-              padding: spacing,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                flexWrap: "wrap",
-                gap: spacing,
-                justifyContent: "flex-start",
-              }}
-            >
+          </LinearGradient>
+          <View style={styles.productsContainer}>
+            <View style={styles.grid}>
               {filteredProducts.length > 0 ? (
-                filteredProducts.map((item, index) => (
+                filteredProducts.slice(0, 4).map((item, index) => (
+                  <View key={index} style={styles.productCardWrapper}>
+                    <ProductCard
+                      item={{ name: item.name, images: item.images, _id: item._id, price: item.price }}
+                      pStyleProps={{
+                        resizeMode: "cover",
+                        width: productWidth,
+                        height: 150,
+                        borderRadius: 10,
+                      }}
+                      productProps={{
+                        onPress: () => navigation.navigate("ProductDetails", {
+                          _id: item._id,
+                          name: item.name,
+                          images: item.images,
+                          price: item.price,
+                          oldPrice: item.oldPrice,
+                          inStock: item.inStock,
+                          description: item.description || "No description available",
+                          quantity: item.quantity,
+                          storage: item.storage,
+                          color: item.color,
+                        }),
+                        imageBg: bgImg,
+                      }}
+                    />
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.noProducts}>No products available</Text>
+              )}
+            </View>
+          </View>
+        </View>
+
+        {/* Trending Deals Section */}
+        <View style={styles.trendingSection}>
+          <LinearGradient colors={["#ffafbd", "#ffc3a0"]} style={styles.sectionHeader}>
+            <Text style={styles.headerText}>Trending Deals</Text>
+          </LinearGradient>
+          <View style={styles.trendingContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              snapToInterval={productWidth + horizontalSpacing}
+              decelerationRate="fast"
+            >
+              {trendingProducts.map((item, index) => (
+                <View key={index} style={styles.trendingCardWrapper}>
                   <ProductCard
-                    key={index}
-                    item={{ name: item.name, images: item.images, _id: item._id, price: item.price }}
+                    item={{
+                      _id: item._id || index.toString(),
+                      name: item.name || "No Name",
+                      images: item.images || ["No Image"],
+                      price: item.price || 0,
+                    }}
                     pStyleProps={{
-                      resizeMode: "contain",
+                      resizeMode: "cover",
                       width: productWidth,
-                      height: productWidth,
-                      marginBottom: 0,
-                      marginHorizontal: 0,
+                      height: 150,
+                      borderRadius: 10,
                     }}
                     productProps={{
                       onPress: () => navigation.navigate("ProductDetails", {
@@ -186,78 +223,15 @@ const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
                         price: item.price,
                         oldPrice: item.oldPrice,
                         inStock: item.inStock,
-                        color: item.color,
-                        size: item.size,
                         description: item.description || "No description available",
                         quantity: item.quantity,
+                        storage: item.storage,
+                        color: item.color,
                       }),
                       imageBg: bgImg,
                     }}
                   />
-                ))
-              ) : (
-                <Text style={{ padding: 10, color: '#666' }}>Không có sản phẩm nào</Text>
-              )}
-            </View>
-          </View>
-        </View>
-
-        {/* Trending Deals Section */}
-        <View style={{ marginTop: 20, paddingHorizontal: 10 }}>
-          <View
-            style={{
-              backgroundColor: '#ff5733',
-              flexDirection: "row",
-              justifyContent: "space-between",
-              padding: 10,
-              borderTopLeftRadius: 12,
-              borderTopRightRadius: 12,
-            }}
-          >
-            <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>
-              Trending Deals of the Week
-            </Text>
-          </View>
-          <View
-            style={{
-              backgroundColor: "#fff",
-              borderWidth: 0,
-              paddingHorizontal: 10,
-              paddingVertical: 5,
-            }}
-          >
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {trendingProducts.map((item, index) => (
-                <ProductCard
-                  key={index}
-                  item={{
-                    _id: item._id || index.toString(),
-                    name: item.name || "No Name",
-                    images: item.images || ["No Image"],
-                    price: item.price || 0,
-                  }}
-                  pStyleProps={{
-                    resizeMode: "contain",
-                    width: productWidth,
-                    height: 100,
-                    marginRight: 15,
-                  }}
-                  productProps={{
-                    imageBg: bgImg,
-                    onPress: () => navigation.navigate("ProductDetails", {
-                      _id: item._id,
-                      name: item.name,
-                      images: item.images,
-                      price: item.price,
-                      oldPrice: item.oldPrice,
-                      inStock: item.inStock,
-                      color: item.color,
-                      size: item.size,
-                      description: item.description || "No description available",
-                      quantity: item.quantity,
-                    }),
-                  }}
-                />
+                </View>
               ))}
             </ScrollView>
           </View>
@@ -266,5 +240,101 @@ const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
+  headerGradient: {
+    paddingTop: Platform.OS === "android" ? 40 : 0,
+    paddingBottom: 10,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  sliderContainer: {
+    backgroundColor: "#fff",
+    paddingVertical: 10,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+  },
+  categorySection: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: 10,
+  },
+  categoryScroll: {
+    paddingBottom: 5,
+  },
+  productsSection: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 12,
+    borderRadius: 10,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
+  headerText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#fff",
+  },
+  seeAll: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#fff",
+  },
+  productsContainer: {
+    backgroundColor: "#fff",
+    padding: 10,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    elevation: 2,
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  productCardWrapper: {
+    width: "48%",
+    marginBottom: 15,
+  },
+  trendingSection: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  trendingContainer: {
+    backgroundColor: "#fff",
+    paddingVertical: 10,
+    borderRadius: 10,
+    elevation: 2,
+  },
+  trendingCardWrapper: {
+    marginRight: 10,
+  },
+  noProducts: {
+    padding: 20,
+    color: "#666",
+    textAlign: "center",
+  },
+});
 
 export default HomeScreen;

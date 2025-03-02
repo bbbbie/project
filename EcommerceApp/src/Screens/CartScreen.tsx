@@ -1,8 +1,6 @@
-// Screens/CartScreen.tsx
 import { View, Text, Platform, FlatList, Image, Pressable, StyleSheet, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { HeadersComponent } from '../Components/HeaderComponent/HeaderComponent';
 import { useDispatch, useSelector } from 'react-redux';
 import { CartState } from '../TypesCheck/productCartTypes';
 import { TabsStackScreenProps } from '../Navigation/TabsNavigator';
@@ -10,106 +8,79 @@ import DisplayMessage from '../Components/HeaderComponent/DisplayMessage';
 import { ProductListParams } from '../TypesCheck/HomeProps';
 import { increaseQuantity, decreaseQuantity, removeFromCart, clearCart } from '../redux/CartReducer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 
-const CartScreen = ({ navigation, route }: TabsStackScreenProps<'Cart'>) => {
-  const gotoCartScreen = () => {
-    if (cart.length === 0) {
-      setMessage('Cart is empty. Please add products to cart.');
-      setDisplayMessage(true);
-      setTimeout(() => {
-        setDisplayMessage(false);
-      }, 3000);
-    } else {
-      navigation.navigate('Home');
-    }
-  };
-
-  const gotoPreviousScreen = () => {
-    if (navigation.canGoBack()) {
-      console.log('Chuyển về trang trước.');
-      navigation.goBack();
-    } else {
-      console.log('Không thể quay lại, chuyển về trang Home.');
-      navigation.navigate('Home');
-    }
-  };
-
-  // Lấy giỏ hàng từ Redux
+const CartScreen = ({ navigation }: TabsStackScreenProps<'Cart'>) => {
   const cart = useSelector((state: CartState) => state.cart.cart);
   const dispatch = useDispatch();
   const [message, setMessage] = useState('');
   const [displayMessage, setDisplayMessage] = useState<boolean>(false);
 
-  // Tính tổng số lượng và tổng giá tiền
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  // Xóa toàn bộ giỏ hàng
   const handleClearCart = () => {
     dispatch(clearCart());
     setMessage('Cart cleared successfully.');
     setDisplayMessage(true);
-    setTimeout(() => {
-      setDisplayMessage(false);
-    }, 3000);
+    setTimeout(() => setDisplayMessage(false), 3000);
   };
 
-  // Xóa một sản phẩm khỏi giỏ hàng
-  const handleRemoveItem = (itemId: string) => {
-    dispatch(removeFromCart(itemId));
+  const handleRemoveItem = (item: string) => { // Sửa payload để nhận ProductListParams thay vì chỉ _id
+    dispatch(removeFromCart(item)); // Truyền toàn bộ item để kiểm tra cấu hình
     setMessage('Item removed from cart.');
     setDisplayMessage(true);
-    setTimeout(() => {
-      setDisplayMessage(false);
-    }, 3000);
+    setTimeout(() => setDisplayMessage(false), 3000);
   };
 
-  // Tăng số lượng sản phẩm
   const handleIncreaseQuantity = (item: ProductListParams) => {
     dispatch(increaseQuantity(item));
   };
 
-  // Giảm số lượng sản phẩm
   const handleDecreaseQuantity = (item: ProductListParams) => {
     dispatch(decreaseQuantity(item));
   };
 
-  // Xử lý nút "Proceed to Buy"
- // Screens/CartScreen.tsx (chỉ sửa handleProceedToBuy)
-const handleProceedToBuy = async () => {
-  if (cart.length === 0) {
-    setMessage('Cart is empty. Please add products to cart.');
-    setDisplayMessage(true);
-    setTimeout(() => {
-      setDisplayMessage(false);
-    }, 3000);
-    return;
-  }
-
-  try {
-    const token = await AsyncStorage.getItem('token');
-    console.log('Token:', token); // Debug
-    if (token) {
-      console.log('User is logged in. Proceed to buy logic can be added here.');
-    } else {
-      console.log('Navigating to UserLogin');
-      navigation.navigate('UserLogin'); // Không cần params
+  const handleProceedToBuy = async () => {
+    if (cart.length === 0) {
+      setMessage('Cart is empty. Please add products to cart.');
+      setDisplayMessage(true);
+      setTimeout(() => setDisplayMessage(false), 3000);
+      return;
     }
-  } catch (error) {
-    console.error('Error checking login status:', error);
-    Alert.alert('Error', 'Something went wrong. Please try again.');
-  }
-};
 
-  // Render mỗi item trong giỏ hàng
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        console.log('User is logged in. Proceed to buy logic can be added here.');
+      } else {
+        navigation.navigate('UserLogin');
+      }
+    } catch (error) {
+      console.error('Error checking login status:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
+  };
+
   const renderCartItem = ({ item }: { item: ProductListParams }) => (
-    <View style={styles.cartItem}>
+    <LinearGradient
+      colors={['#ffffff', '#f9f9f9']}
+      style={styles.cartItem}
+    >
       <Image
         source={{ uri: item.images[0] || 'https://via.placeholder.com/100' }}
         style={styles.itemImage}
       />
       <View style={styles.itemDetails}>
         <Text style={styles.itemName}>{item.name}</Text>
+        {/* Hiển thị Storage nếu có */}
+        {item.selectedStorage && (
+          <Text style={styles.itemOption}>Storage: {item.selectedStorage}</Text>
+        )}
+        {/* Hiển thị Color nếu có */}
+        {item.selectedColor && (
+          <Text style={styles.itemOption}>Color: {item.selectedColor}</Text>
+        )}
         <Text style={styles.itemPrice}>${item.price} x {item.quantity}</Text>
         <Text style={styles.itemTotal}>Total: ${(item.price * item.quantity).toFixed(2)}</Text>
       </View>
@@ -129,19 +100,20 @@ const handleProceedToBuy = async () => {
             <Text style={styles.quantityButtonText}>+</Text>
           </Pressable>
         </View>
-        <Pressable
+        <LinearGradient
+          colors={['#ef4444', '#dc2626']}
           style={styles.removeButton}
-          onPress={() => handleRemoveItem(item._id)}
         >
-          <Text style={styles.removeButtonText}>Remove</Text>
-        </Pressable>
+          <Pressable onPress={() => handleRemoveItem(item._id)}>
+            <Text style={styles.removeButtonText}>Remove</Text>
+          </Pressable>
+        </LinearGradient>
       </View>
-    </View>
+    </LinearGradient>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Hiển thị thông báo nếu có */}
       {displayMessage && (
         <DisplayMessage
           message={message}
@@ -149,31 +121,34 @@ const handleProceedToBuy = async () => {
         />
       )}
 
-      {/* Header component */}
-      <HeadersComponent
-        gotoCartScreen={gotoCartScreen}
-        cartLength={cart.length}
-        gotoPrevious={gotoPreviousScreen}
-      />
+      <LinearGradient
+        colors={['#4facfe', '#00f2fe']}
+        style={styles.headerGradient}
+      >
+        <Text style={styles.headerTitle}>Cart</Text>
+      </LinearGradient>
 
-      {/* Nội dung giỏ hàng */}
       {cart.length === 0 ? (
         <View style={styles.emptyCartContainer}>
-          <Text style={styles.emptyCartText}>Your cart is empty. Add some products!</Text>
+          <Text style={styles.emptyCartText}>Your Cart is Empty</Text>
+          <Text style={styles.emptyCartSubText}>Add some products to get started!</Text>
         </View>
       ) : (
         <View style={styles.cartContent}>
-          {/* Danh sách sản phẩm trong giỏ hàng */}
           <FlatList
             data={cart}
             renderItem={renderCartItem}
-            keyExtractor={(item) => item._id}
+            keyExtractor={(item) => 
+              `${item._id}-${item.selectedStorage || ''}-${item.selectedColor || ''}`
+            } // Key duy nhất dựa trên _id, storage, và color
             contentContainerStyle={styles.cartList}
             showsVerticalScrollIndicator={false}
           />
 
-          {/* Tổng kết giỏ hàng */}
-          <View style={styles.summaryContainer}>
+          <LinearGradient
+            colors={['#ffffff', '#f5f5f5']}
+            style={styles.summaryContainer}
+          >
             <View style={styles.summaryRow}>
               <Text style={styles.summaryText}>Total Items:</Text>
               <Text style={styles.summaryValue}>{totalItems}</Text>
@@ -182,13 +157,25 @@ const handleProceedToBuy = async () => {
               <Text style={styles.summaryText}>Total Price:</Text>
               <Text style={styles.summaryValue}>${totalPrice.toFixed(2)}</Text>
             </View>
-            <Pressable style={styles.clearButton} onPress={handleClearCart}>
-              <Text style={styles.clearButtonText}>Clear All</Text>
-            </Pressable>
-            <Pressable style={styles.proceedButton} onPress={handleProceedToBuy}>
-              <Text style={styles.proceedButtonText}>Proceed to Buy</Text>
-            </Pressable>
-          </View>
+            <View style={styles.buttonRow}>
+              <LinearGradient
+                colors={['#f87171', '#ef4444']}
+                style={styles.clearButton}
+              >
+                <Pressable onPress={handleClearCart}>
+                  <Text style={styles.clearButtonText}>Clear All</Text>
+                </Pressable>
+              </LinearGradient>
+              <LinearGradient
+                colors={['#34d399', '#22c55e']}
+                style={styles.proceedButton}
+              >
+                <Pressable onPress={handleProceedToBuy}>
+                  <Text style={styles.proceedButtonText}>Proceed to Buy</Text>
+                </Pressable>
+              </LinearGradient>
+            </View>
+          </LinearGradient>
         </View>
       )}
     </SafeAreaView>
@@ -198,112 +185,143 @@ const handleProceedToBuy = async () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    paddingTop: Platform.OS === 'android' ? 0 : 0,
+    backgroundColor: '#F9FAFB',
+  },
+  headerGradient: {
+    paddingTop: Platform.OS === 'android' ? 40 : 0,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
+    elevation: 4,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#fff',
+    textAlign: 'center',
   },
   emptyCartContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   emptyCartText: {
-    color: '#333',
-    fontSize: 18,
-    fontWeight: '500',
+    color: '#1F2937',
+    fontSize: 26,
+    fontWeight: '700',
+    marginBottom: 10,
+  },
+  emptyCartSubText: {
+    color: '#6B7280',
+    fontSize: 16,
+    textAlign: 'center',
   },
   cartContent: {
     flex: 1,
   },
   cartList: {
     paddingHorizontal: 15,
-    paddingBottom: 220, // Tăng padding để chứa nút Proceed to Buy
+    paddingTop: 15,
+    paddingBottom: 200,
   },
   cartItem: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
-    marginVertical: 5,
-    elevation: 2,
+    borderRadius: 15,
+    padding: 15,
+    marginVertical: 8,
+    elevation: 3,
     shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
   },
   itemImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 10,
+    width: 90,
+    height: 90,
+    borderRadius: 10,
+    marginRight: 15,
   },
   itemDetails: {
     flex: 1,
     justifyContent: 'center',
   },
   itemName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 5,
+  },
+  itemOption: { // Style mới cho storage và color
+    fontSize: 14,
+    color: '#6B7280', // Đồng bộ với itemPrice để giữ thiết kế đẹp
+    marginBottom: 5,
   },
   itemPrice: {
-    fontSize: 14,
-    color: '#666',
-    marginVertical: 2,
+    fontSize: 16,
+    color: '#6B7280',
+    marginBottom: 5,
   },
   itemTotal: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#2ecc71',
+    color: '#22c55e',
   },
   itemActions: {
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 10,
   },
   quantityControls: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#E5E7EB',
+    borderRadius: 30,
+    padding: 6,
   },
   quantityButton: {
-    backgroundColor: '#3498db',
-    borderRadius: 5,
-    width: 30,
-    height: 30,
+    backgroundColor: '#4facfe',
+    borderRadius: 15,
+    width: 35,
+    height: 35,
     justifyContent: 'center',
     alignItems: 'center',
   },
   quantityButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
+    lineHeight: 16,
+    textAlign: 'center',
+    position: 'relative',
+    top: Platform.OS === 'ios' ? 0 : 0,
   },
   quantityText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
-    marginHorizontal: 10,
-    color: '#333',
+    marginHorizontal: 15,
+    color: '#1F2937',
   },
   removeButton: {
-    backgroundColor: '#e74c3c',
-    borderRadius: 5,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    marginTop: 5,
+    borderRadius: 15,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   removeButtonText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
   },
   summaryContainer: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
-    elevation: 3,
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    elevation: 5,
     shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
-    shadowOffset: { width: 0, height: -2 },
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -312,41 +330,46 @@ const styles = StyleSheet.create({
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 15,
   },
   summaryText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: '#1F2937',
   },
   summaryValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2ecc71',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#22c55e',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
   },
   clearButton: {
-    backgroundColor: '#e74c3c',
-    borderRadius: 10,
-    paddingVertical: 12,
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 15,
     alignItems: 'center',
-    marginTop: 10,
+    elevation: 3,
   },
   clearButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   proceedButton: {
-    backgroundColor: '#2ecc71', // Green button for Proceed to Buy
-    borderRadius: 10,
-    paddingVertical: 12,
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 15,
     alignItems: 'center',
-    marginTop: 10,
+    elevation: 3,
   },
   proceedButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
 });
 

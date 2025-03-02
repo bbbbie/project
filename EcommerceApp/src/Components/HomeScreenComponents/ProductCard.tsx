@@ -20,8 +20,8 @@ export const ProductCard = ({ item, productProps, pStyleProps }: IProductProps) 
           styles.card,
           {
             width: pStyleProps?.width,
-            marginHorizontal: pStyleProps?.marginHorizontal,
-            marginBottom: pStyleProps?.marginBottom,
+            marginHorizontal: pStyleProps?.marginHorizontal || 5,
+            marginBottom: pStyleProps?.marginBottom || 12,
           },
         ]}
       >
@@ -29,7 +29,10 @@ export const ProductCard = ({ item, productProps, pStyleProps }: IProductProps) 
         <View style={styles.imageContainer}>
           <ImageBackground
             source={{ uri: productProps?.imageBg }}
-            style={[styles.imageBg, { height: pStyleProps?.height }]}
+            style={[
+              styles.imageBg,
+              { height: pStyleProps?.height },
+            ]}
             imageStyle={styles.imageBgStyle}
           >
             <Image
@@ -39,23 +42,25 @@ export const ProductCard = ({ item, productProps, pStyleProps }: IProductProps) 
                 { resizeMode: pStyleProps?.resizeMode },
               ]}
             />
+            {/* Nhãn "Hot Deal" cho Trending Deals */}
+            {pStyleProps?.height === 120 && (
+              <View style={styles.hotDeal}>
+                <Text style={styles.hotDealText}>Hot Deal</Text>
+              </View>
+            )}
           </ImageBackground>
         </View>
 
         {/* Product Info Container */}
         <View style={styles.infoContainer}>
-          <Text numberOfLines={2} style={styles.productName}>
+          <Text numberOfLines={pStyleProps?.height === 120 ? 1 : 2} style={styles.productName}>
             {item?.name}
           </Text>
-
-          {/* Price Container */}
           <View style={styles.priceContainer}>
             <Text style={styles.priceText}>
-              {"$" + formatPrice(item?.price)} {/* Concatenate the $ and price as a single string */}
+              {"$" + formatPrice(item?.price)}
             </Text>
           </View>
-
-          {/* Stock Information */}
           {productProps?.percentageWidth !== undefined && (
             <View style={styles.stockContainer}>
               <Text style={styles.stockText}>{item?.quantity} items left</Text>
@@ -86,7 +91,7 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 0,
     borderRadius: 12,
-    backgroundColor: '#fff',
+    backgroundColor: '#e8ecef',
     overflow: 'hidden',
     elevation: 5,
     shadowColor: '#000',
@@ -100,12 +105,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   imageBg: {
-    width: '100%',
+    width: 100, // Sửa từ "100" thành 100
     alignItems: 'center',
     justifyContent: 'center',
   },
   imageBgStyle: {
     borderRadius: 10,
+    overflow: 'hidden', // Chỉ dùng thuộc tính hợp lệ với ImageStyle
   },
   productImage: {
     height: '100%',
@@ -117,22 +123,26 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 2,
-    color: '#1a1a1a',
+    fontWeight: '500',
+    fontStyle: 'italic',
+    marginBottom: 4,
+    color: '#2c3e50',
     height: 40,
     lineHeight: 20,
+    textAlign: 'center',
   },
   priceContainer: {
-    marginTop: 2,
+    marginTop: -5,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
   },
   priceText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ff5733',
+    color: '#e74c3c',
+    textAlign: 'center',
   },
   stockContainer: {
     marginTop: 10,
@@ -141,6 +151,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginBottom: 4,
+    textAlign: 'center',
   },
   progressBarContainer: {
     width: '100%',
@@ -153,5 +164,19 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#ff5733',
     borderRadius: 4,
+  },
+  hotDeal: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: '#ff4444',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  hotDealText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#fff',
   },
 });

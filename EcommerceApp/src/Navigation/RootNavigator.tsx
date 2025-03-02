@@ -1,4 +1,3 @@
-// Navigation/RootNavigator.ts
 import React from "react";
 import {
   createNativeStackNavigator,
@@ -9,8 +8,11 @@ import OnboardingScreen from "../Screens/OnboardingScreen";
 import TabsNavigator, { TabsStackParams } from "./TabsNavigator";
 import ProductDetails from "../Screens/ProductDetails";
 import UserLogin from "../Screens/UserLogin";
-
-
+import AdminPanel from "../Screens/AdminPanel";
+import EditPersonalInfo from "../Screens/EditPersonalInfo"; // Thêm
+import EditAddress from "../Screens/EditAddress"; // Thêm
+import { ProductListParams } from "../TypesCheck/HomeProps";
+import AllProductsScreen from "../Screens/AllProductsScreen";
 
 export type RootStackParams = {
   OnboardingScreen: undefined;
@@ -24,8 +26,8 @@ export type RootStackParams = {
     price: number;
     oldPrice?: number;
     inStock?: boolean;
-    color?: string;
-    size?: string;
+    color?: string[] | undefined; // Thay đổi thành string[]
+    storage?: string[] | undefined;
     description?: string;
     quantity: number;
   };
@@ -38,7 +40,11 @@ export type RootStackParams = {
     size?: string;
     quantity?: number;
   };
-  UserLogin: undefined; // Giữ undefined vì không cần params
+  UserLogin: undefined;
+  AdminPanel: undefined;
+  EditPersonalInfo: { userData: any }; // Thêm
+  EditAddress: { userData: any }; // Thêm
+  AllProducts: { products: ProductListParams[] }; 
 };
 
 const RootStack = createNativeStackNavigator<RootStackParams>();
@@ -68,7 +74,28 @@ const RootNavigator = () => {
         component={UserLogin}
         options={{ headerShown: false }}
       />
+      <RootStack.Screen
+        name="AdminPanel"
+        component={AdminPanel}
+        options={{ headerShown: false }}
+      />
+      <RootStack.Screen
+        name="EditPersonalInfo"
+        component={EditPersonalInfo}
+        options={{ headerShown: false }}
+      />
+      <RootStack.Screen
+        name="EditAddress"
+        component={EditAddress}
+        options={{ headerShown: false }}
+      />
+       <RootStack.Screen
+        name="AllProducts"
+        component={AllProductsScreen}
+        options={{ headerShown: false }}
+      />
     </RootStack.Navigator>
+
   );
 };
 
