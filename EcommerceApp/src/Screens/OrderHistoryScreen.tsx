@@ -37,7 +37,7 @@ const OrderHistoryScreen = ({ navigation }: TabsStackScreenProps<'OrderHistory'>
       const userDataString = await AsyncStorage.getItem('userData');
       if (!token || !userDataString) {
         Alert.alert('Error', 'Please log in to view your order history.', [
-          { text: 'OK', onPress: () => navigation.navigate('UserLogin') },
+          { text: 'OK' },
         ]);
         return;
       }

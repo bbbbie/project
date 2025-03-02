@@ -139,22 +139,30 @@ const AdminPanel = ({ navigation }: RootStackScreenProps<'AdminPanel'>) => {
   };
 
   const handleCreateProduct = async () => {
-    if (!productName || !price || !description || !quantity || !selectedCategory || productImages.length === 0 || storageOptions.some(s => !s) || colorOptions.some(c => !c)) {
-      Alert.alert('Error', 'Please fill all required fields and add at least one image, storage, and color');
+    if (!productName || !price || !description || !quantity || !selectedCategory || productImages.length === 0) {
+      Alert.alert('Error', 'Please fill all required fields and add at least one image');
       return;
     }
+  
     const formData = new FormData();
     formData.append('name', productName);
     formData.append('price', price);
     formData.append('description', description);
     formData.append('quantity', quantity);
     formData.append('category', selectedCategory);
-    storageOptions.forEach((storage) => formData.append('storage[]', storage));
-    colorOptions.forEach((color) => formData.append('color[]', color));
+  
+    // Chỉ thêm storageOptions nếu có giá trị
+    const validStorageOptions = storageOptions.filter(s => s.trim() !== '');
+    validStorageOptions.forEach((storage) => formData.append('storage[]', storage));
+  
+    // Chỉ thêm colorOptions nếu có giá trị
+    const validColorOptions = colorOptions.filter(c => c.trim() !== '');
+    validColorOptions.forEach((color) => formData.append('color[]', color));
+  
     productImages.forEach((image, index) => {
       formData.append('images', { uri: image, type: 'image/jpeg', name: `product_image_${index}.jpg` } as any);
     });
-
+  
     try {
       await axios.post(`${BASE_URL}/product/createProduct`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -342,81 +350,122 @@ const AdminPanel = ({ navigation }: RootStackScreenProps<'AdminPanel'>) => {
                 </ScrollView>
               ) : modalType === 'product' ? (
                 <ScrollView>
-                  <Text style={styles.modalTitle}>Create Product</Text>
-                  <TextInput style={styles.input} placeholder="Product Name" value={productName} onChangeText={setProductName} placeholderTextColor="#9CA3AF" />
-                  <TextInput style={styles.input} placeholder="Price" value={price} onChangeText={setPrice} keyboardType="numeric" placeholderTextColor="#9CA3AF" />
-                  <TextInput style={styles.input} placeholder="Description" value={description} onChangeText={setDescription} multiline placeholderTextColor="#9CA3AF" />
-                  <TextInput style={styles.input} placeholder="Quantity" value={quantity} onChangeText={setQuantity} keyboardType="numeric" placeholderTextColor="#9CA3AF" />
-
-                  <Text style={styles.label}>Storage Options</Text>
-                  {storageOptions.map((storage, index) => (
-                    <View key={index} style={styles.optionRow}>
-                      <TextInput
-                        style={styles.input}
-                        placeholder={`Storage ${index + 1} (e.g., 8GB)`}
-                        value={storage}
-                        onChangeText={(text) => updateStorageOption(index, text)}
-                        placeholderTextColor="#9CA3AF"
-                      />
-                      {storageOptions.length > 1 && (
-                        <Pressable onPress={() => removeStorageOption(index)} style={styles.removeButton}>
-                          <Text style={styles.removeButtonText}>X</Text>
-                        </Pressable>
-                      )}
-                    </View>
-                  ))}
-                  <LinearGradient colors={['#4facfe', '#00f2fe']} style={styles.actionButton}>
-                    <Pressable onPress={addStorageOption}>
-                      <Text style={styles.buttonText}>Add Storage</Text>
-                    </Pressable>
-                  </LinearGradient>
-
-                  <Text style={styles.label}>Color Options</Text>
-                  {colorOptions.map((color, index) => (
-                    <View key={index} style={styles.optionRow}>
-                      <TextInput
-                        style={styles.input}
-                        placeholder={`Color ${index + 1} (e.g., Black)`}
-                        value={color}
-                        onChangeText={(text) => updateColorOption(index, text)}
-                        placeholderTextColor="#9CA3AF"
-                      />
-                      {colorOptions.length > 1 && (
-                        <Pressable onPress={() => removeColorOption(index)} style={styles.removeButton}>
-                          <Text style={styles.removeButtonText}>X</Text>
-                        </Pressable>
-                      )}
-                    </View>
-                  ))}
-                  <LinearGradient colors={['#4facfe', '#00f2fe']} style={styles.actionButton}>
-                    <Pressable onPress={addColorOption}>
-                      <Text style={styles.buttonText}>Add Color</Text>
-                    </Pressable>
-                  </LinearGradient>
-
-                  <Text style={styles.label}>Select Category:</Text>
-                  <Picker selectedValue={selectedCategory} onValueChange={setSelectedCategory} style={styles.picker}>
-                    {categories.map(cat => <Picker.Item key={cat._id} label={cat.name} value={cat._id} />)}
-                  </Picker>
-                  <LinearGradient colors={['#4facfe', '#00f2fe']} style={styles.actionButton}>
-                    <Pressable onPress={pickProductImages}>
-                      <Text style={styles.buttonText}>Pick Images</Text>
-                    </Pressable>
-                  </LinearGradient>
-                  <View style={styles.imagePreviewContainer}>
-                    {productImages.map((image, index) => <Image key={index} source={{ uri: image }} style={styles.previewImage} />)}
+                <Text style={styles.modalTitle}>Create Product</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Product Name"
+                  value={productName}
+                  onChangeText={setProductName}
+                  placeholderTextColor="#9CA3AF"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Price"
+                  value={price}
+                  onChangeText={setPrice}
+                  keyboardType="numeric"
+                  placeholderTextColor="#9CA3AF"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Description"
+                  value={description}
+                  onChangeText={setDescription}
+                  multiline
+                  placeholderTextColor="#9CA3AF"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Quantity"
+                  value={quantity}
+                  onChangeText={setQuantity}
+                  keyboardType="numeric"
+                  placeholderTextColor="#9CA3AF"
+                />
+            
+                <Text style={styles.label}>Storage Options</Text>
+                {storageOptions.map((storage, index) => (
+                  <View key={index} style={styles.optionRow}>
+                    <TextInput
+                      style={styles.input}
+                      placeholder={`Storage ${index + 1} (e.g., 8GB)`}
+                      value={storage}
+                      onChangeText={(text) => updateStorageOption(index, text)}
+                      placeholderTextColor="#9CA3AF"
+                    />
+                    {storageOptions.length > 1 && (
+                      <Pressable onPress={() => removeStorageOption(index)} style={styles.removeButton}>
+                        <Text style={styles.removeButtonText}>X</Text>
+                      </Pressable>
+                    )}
                   </View>
-                  <LinearGradient colors={['#4facfe', '#00f2fe']} style={styles.actionButton}>
-                    <Pressable onPress={handleCreateProduct}>
-                      <Text style={styles.buttonText}>Create Product</Text>
-                    </Pressable>
-                  </LinearGradient>
-                  <LinearGradient colors={['#ff6f61', '#ff9a8b']} style={styles.actionButton}>
-                    <Pressable onPress={() => { setModalVisible(false); resetProductForm(); }}>
-                      <Text style={styles.buttonText}>Close</Text>
-                    </Pressable>
-                  </LinearGradient>
-                </ScrollView>
+                ))}
+                <LinearGradient colors={['#4facfe', '#00f2fe']} style={styles.actionButton}>
+                  <Pressable onPress={addStorageOption}>
+                    <Text style={styles.buttonText}>Add Storage</Text>
+                  </Pressable>
+                </LinearGradient>
+            
+                <Text style={styles.label}>Color Options</Text>
+                {colorOptions.map((color, index) => (
+                  <View key={index} style={styles.optionRow}>
+                    <TextInput
+                      style={styles.input}
+                      placeholder={`Color ${index + 1} (e.g., Black)`}
+                      value={color}
+                      onChangeText={(text) => updateColorOption(index, text)}
+                      placeholderTextColor="#9CA3AF"
+                    />
+                    {colorOptions.length > 1 && (
+                      <Pressable onPress={() => removeColorOption(index)} style={styles.removeButton}>
+                        <Text style={styles.removeButtonText}>X</Text>
+                      </Pressable>
+                    )}
+                  </View>
+                ))}
+                <LinearGradient colors={['#4facfe', '#00f2fe']} style={styles.actionButton}>
+                  <Pressable onPress={addColorOption}>
+                    <Text style={styles.buttonText}>Add Color</Text>
+                  </Pressable>
+                </LinearGradient>
+            
+                <Text style={styles.label}>Select Category:</Text>
+                <Picker
+                  selectedValue={selectedCategory}
+                  onValueChange={setSelectedCategory}
+                  style={styles.picker}
+                  itemStyle={styles.pickerItem} // Thêm itemStyle để tùy chỉnh màu chữ
+                >
+                  {categories.map((cat) => (
+                    <Picker.Item key={cat._id} label={cat.name} value={cat._id} />
+                  ))}
+                </Picker>
+                <LinearGradient colors={['#4facfe', '#00f2fe']} style={styles.actionButton}>
+                  <Pressable onPress={pickProductImages}>
+                    <Text style={styles.buttonText}>Pick Images</Text>
+                  </Pressable>
+                </LinearGradient>
+                <View style={styles.imagePreviewContainer}>
+                  {productImages.map((image, index) => (
+                    <Image key={index} source={{ uri: image }} style={styles.previewImage} />
+                  ))}
+                </View>
+                <LinearGradient colors={['#4facfe', '#00f2fe']} style={styles.actionButton}>
+                  <Pressable onPress={handleCreateProduct}>
+                    <Text style={styles.buttonText}>Create Product</Text>
+                  </Pressable>
+                </LinearGradient>
+                <LinearGradient colors={['#ff6f61', '#ff9a8b']} style={styles.actionButton}>
+                  <Pressable
+                    onPress={() => {
+                      setModalVisible(false);
+                      resetProductForm();
+                    }}
+                  >
+                    <Text style={styles.buttonText}>Close</Text>
+                  </Pressable>
+                </LinearGradient>
+              </ScrollView>
               ) : modalType === 'manageCategories' && !editingId ? (
                 <>
                   <Text style={styles.modalTitle}>Manage Categories</Text>
@@ -550,7 +599,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   picker: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F3F4F6', // Nền sáng
     borderRadius: 10,
     marginBottom: 15,
   },
@@ -621,6 +670,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  }, 
+  pickerItem: {
+    color: '#000000', // Màu chữ tối để tương phản với nền
+    fontSize: 16,
   },
 });
 

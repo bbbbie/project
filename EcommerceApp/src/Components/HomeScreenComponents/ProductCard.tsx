@@ -39,7 +39,11 @@ export const ProductCard = ({ item, productProps, pStyleProps }: IProductProps) 
               source={{ uri: item?.images[0]?.replace("localhost", "192.168.1.17") }}
               style={[
                 styles.productImage,
-                { resizeMode: pStyleProps?.resizeMode },
+                {
+                  resizeMode: pStyleProps?.resizeMode,
+                  width: '100%', // Hiển thị toàn bộ chiều rộng
+                  height: pStyleProps?.height, // Dùng chiều cao từ props
+                },
               ]}
             />
             {/* Nhãn "Hot Deal" cho Trending Deals */}
@@ -53,7 +57,7 @@ export const ProductCard = ({ item, productProps, pStyleProps }: IProductProps) 
 
         {/* Product Info Container */}
         <View style={styles.infoContainer}>
-          <Text numberOfLines={pStyleProps?.height === 120 ? 1 : 2} style={styles.productName}>
+          <Text numberOfLines={2} style={styles.productName}>
             {item?.name}
           </Text>
           <View style={styles.priceContainer}>
@@ -105,17 +109,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   imageBg: {
-    width: 100, // Sửa từ "100" thành 100
+    width: '100%', // Đảm bảo ảnh chiếm toàn bộ chiều rộng container
     alignItems: 'center',
     justifyContent: 'center',
   },
   imageBgStyle: {
     borderRadius: 10,
-    overflow: 'hidden', // Chỉ dùng thuộc tính hợp lệ với ImageStyle
+    overflow: 'hidden',
   },
   productImage: {
-    height: '100%',
-    width: '80%',
+    width: '100%', // Hiển thị toàn bộ chiều rộng
   },
   infoContainer: {
     paddingHorizontal: 12,
@@ -127,7 +130,6 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginBottom: 4,
     color: '#2c3e50',
-    height: 40,
     lineHeight: 20,
     textAlign: 'center',
   },

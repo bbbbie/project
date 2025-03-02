@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, Image, Alert, ScrollView, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  Image,
+  Alert,
+  ScrollView,
+  SafeAreaView,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TabsStackScreenProps } from '../Navigation/TabsNavigator';
-import { LinearGradient } from 'expo-linear-gradient';
-import * as ImagePicker from 'expo-image-picker';
+import { LinearGradient } from 'expo-linear-gradient'; // Thêm lại LinearGradient
+import * as ImagePicker from 'expo-image-picker'; // Thêm lại expo-image-picker
 import axios from 'axios';
 import { useFocusEffect } from '@react-navigation/native';
-import { useDispatch } from 'react-redux'; // Thêm để sử dụng Redux
-import { clearCart } from '../redux/CartReducer'; // Thêm để gọi action clearCart (đảm bảo đường dẫn đúng)
+import { useDispatch } from 'react-redux';
+import { clearCart } from '../redux/CartReducer';
 
 interface UserData {
   id: string;
@@ -23,7 +32,7 @@ const ProfileScreen = ({ navigation }: TabsStackScreenProps<'Profile'>) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [avatar, setAvatar] = useState<string>('https://via.placeholder.com/150');
   const [loading, setLoading] = useState(false);
-  const dispatch = useDispatch(); // Khởi tạo dispatch để gọi action Redux
+  const dispatch = useDispatch();
 
   const BACKEND_URL = 'http://192.168.1.17:9000/users';
 
@@ -31,34 +40,32 @@ const ProfileScreen = ({ navigation }: TabsStackScreenProps<'Profile'>) => {
     try {
       const token = await AsyncStorage.getItem('token');
       const userDataString = await AsyncStorage.getItem('userData');
-      console.log('Token:', token);
-      console.log('UserDataString:', userDataString);
 
-      if (token && userDataString) {
-        const user: UserData = JSON.parse(userDataString);
-        console.log('User ID:', user.id);
-        setUserData(user);
-        const correctedAvatar = user.avatar?.replace('http://localhost:9000', 'http://192.168.1.17:9000') || 'https://via.placeholder.com/150';
-        setAvatar(correctedAvatar);
-
-        const response = await axios.get(`${BACKEND_URL}/user/${user.id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const updatedUser = response.data;
-        console.log('Fetched user data:', updatedUser);
-        const updatedAvatar = updatedUser.avatar?.replace('http://localhost:9000', 'http://192.168.1.17:9000') || 'https://via.placeholder.com/150';
-        setUserData(updatedUser);
-        setAvatar(updatedAvatar);
-        await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
-      } else {
-        Alert.alert('Error', 'No user data found. Please log in again.');
-        navigation.navigate('UserLogin');
+      if (!token || !userDataString) {
+        setUserData(null);
+        return;
       }
+
+      const user: UserData = JSON.parse(userDataString);
+      setUserData(user);
+      const correctedAvatar =
+        user.avatar?.replace('http://localhost:9000', 'http://192.168.1.17:9000') ||
+        'https://via.placeholder.com/150';
+      setAvatar(correctedAvatar);
+
+      const response = await axios.get(`${BACKEND_URL}/user/${user.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const updatedUser = response.data;
+      setUserData(updatedUser);
+      setAvatar(
+        updatedUser.avatar?.replace('http://localhost:9000', 'http://192.168.1.17:9000') ||
+          'https://via.placeholder.com/150'
+      );
+      await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
     } catch (error) {
       console.error('Error fetching user data:', error);
-      if (!userData) {
-        Alert.alert('Error', 'Failed to load profile.');
-      }
+      setUserData(null);
     }
   };
 
@@ -88,9 +95,14 @@ const ProfileScreen = ({ navigation }: TabsStackScreenProps<'Profile'>) => {
 
     if (!result.canceled && result.assets[0].uri) {
       setLoading(true);
-
       try {
         const token = await AsyncStorage.getItem('token');
+        if (!token || !userData?.id) {
+          Alert.alert('Error', 'You must be logged in to update your avatar.');
+          setLoading(false);
+          return;
+        }
+
         const formData = new FormData();
         formData.append('avatar', {
           uri: result.assets[0].uri,
@@ -98,21 +110,17 @@ const ProfileScreen = ({ navigation }: TabsStackScreenProps<'Profile'>) => {
           name: 'avatar.jpg',
         } as any);
 
-        const response = await axios.put(
-          `${BACKEND_URL}/user/${userData?.id}`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
+        const response = await axios.put(`${BACKEND_URL}/user/${userData.id}`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        });
 
-        const updatedUser = response.data.user;
-        console.log('Updated user after upload:', updatedUser);
-        console.log('New avatar URL:', updatedUser.avatar);
-        const correctedAvatar = updatedUser.avatar?.replace('http://localhost:9000', 'http://192.168.1.17:9000') || 'https://via.placeholder.com/150';
+        const updatedUser = response.data.user; // Giả định backend trả về response.data.user như đoạn code 1
+        const correctedAvatar =
+          updatedUser.avatar?.replace('http://localhost:9000', 'http://192.168.1.17:9000') ||
+          'https://via.placeholder.com/150';
         setUserData(updatedUser);
         setAvatar(correctedAvatar);
         await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
@@ -131,7 +139,7 @@ const ProfileScreen = ({ navigation }: TabsStackScreenProps<'Profile'>) => {
     try {
       await AsyncStorage.removeItem('token');
       await AsyncStorage.removeItem('userData');
-      dispatch(clearCart()); // Thêm này để xóa giỏ hàng khi đăng xuất
+      dispatch(clearCart());
       Alert.alert('Success', 'You have been logged out.');
       navigation.navigate('UserLogin');
     } catch (error) {
@@ -139,9 +147,14 @@ const ProfileScreen = ({ navigation }: TabsStackScreenProps<'Profile'>) => {
     }
   };
 
+  const handleLogin = () => {
+    navigation.navigate('UserLogin');
+  };
+
   const handleAdminPanel = () => navigation.navigate('AdminPanel');
   const handleEditPersonalInfo = () => navigation.navigate('EditPersonalInfo', { userData });
   const handleEditAddress = () => navigation.navigate('EditAddress', { userData });
+  const handleWishlist = () => navigation.navigate('WishlistScreen');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -149,37 +162,50 @@ const ProfileScreen = ({ navigation }: TabsStackScreenProps<'Profile'>) => {
         <Text style={styles.headerTitle}>Your Profile</Text>
       </LinearGradient>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.profileCard}>
-          <Pressable onPress={pickImage} disabled={loading} style={styles.avatarContainer}>
-            <Image
-              source={{ uri: avatar }}
-              style={styles.avatar}
-            />
-            <Text style={styles.changeAvatarText}>Change Avatar</Text>
-          </Pressable>
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>{userData?.firstName || 'User'}</Text>
-            <Text style={styles.userEmail}>{userData?.email || 'Loading...'}</Text>
+        {userData ? (
+          <>
+            <View style={styles.profileCard}>
+              <Pressable onPress={pickImage} disabled={loading} style={styles.avatarContainer}>
+                <Image source={{ uri: avatar }} style={styles.avatar} />
+                <Text style={styles.changeAvatarText}>
+                  {loading ? 'Uploading...' : 'Change Avatar'}
+                </Text>
+              </Pressable>
+              <View style={styles.userInfo}>
+                <Text style={styles.userName}>{userData.firstName || 'User'}</Text>
+                <Text style={styles.userEmail}>{userData.email || 'Loading...'}</Text>
+              </View>
+            </View>
+            <View style={styles.optionsContainer}>
+              <Pressable style={styles.optionCard} onPress={handleEditPersonalInfo}>
+                <Text style={styles.optionText}>Edit Personal Info</Text>
+              </Pressable>
+              <Pressable style={styles.optionCard} onPress={handleEditAddress}>
+                <Text style={styles.optionText}>Edit Shipping Address</Text>
+              </Pressable>
+              <Pressable style={styles.optionCard} onPress={handleWishlist}>
+                <Text style={styles.optionText}>Wishlist</Text>
+              </Pressable>
+              {userData.role === 'admin' && (
+                <Pressable style={styles.optionCard} onPress={handleAdminPanel}>
+                  <Text style={styles.optionText}>Admin Panel</Text>
+                </Pressable>
+              )}
+              <LinearGradient colors={['#ff6f61', '#ff9a8b']} style={styles.logoutButton}>
+                <Pressable onPress={handleLogout}>
+                  <Text style={styles.logoutText}>Log Out</Text>
+                </Pressable>
+              </LinearGradient>
+            </View>
+          </>
+        ) : (
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginMessage}>You are not logged in.</Text>
+            <Pressable style={styles.loginButton} onPress={handleLogin}>
+              <Text style={styles.loginButtonText}>Login</Text>
+            </Pressable>
           </View>
-        </View>
-        <View style={styles.optionsContainer}>
-          <Pressable style={styles.optionCard} onPress={handleEditPersonalInfo}>
-            <Text style={styles.optionText}>Edit Personal Info</Text>
-          </Pressable>
-          <Pressable style={styles.optionCard} onPress={handleEditAddress}>
-            <Text style={styles.optionText}>Edit Shipping Address</Text>
-          </Pressable>
-          {userData?.role === 'admin' && (
-            <Pressable style={styles.optionCard} onPress={handleAdminPanel}>
-              <Text style={styles.optionText}>Admin Panel</Text>
-            </Pressable>
-          )}
-          <LinearGradient colors={['#ff6f61', '#ff9a8b']} style={styles.logoutButton}>
-            <Pressable onPress={handleLogout}>
-              <Text style={styles.logoutText}>Log Out</Text>
-            </Pressable>
-          </LinearGradient>
-        </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -276,6 +302,28 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   logoutText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+    textAlign: 'center',
+  },
+  loginContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loginMessage: {
+    fontSize: 18,
+    color: '#6B7280',
+    marginBottom: 20,
+  },
+  loginButton: {
+    backgroundColor: '#4facfe',
+    borderRadius: 15,
+    padding: 18,
+    elevation: 2,
+  },
+  loginButtonText: {
     fontSize: 18,
     fontWeight: '600',
     color: '#fff',

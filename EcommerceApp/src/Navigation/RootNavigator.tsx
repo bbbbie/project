@@ -15,6 +15,7 @@ import CheckoutScreen from "../Screens/CheckoutScreen";
 import { ProductListParams } from "../TypesCheck/HomeProps";
 import AllProductsScreen from "../Screens/AllProductsScreen";
 import OrderDetailScreen from "../Screens/OrderDetailScreen";
+import WishlistScreen from "../Screens/WishlistScreen";
 
 // Định nghĩa interface cho Order và OrderItem
 interface OrderItem {
@@ -68,7 +69,8 @@ export type RootStackParams = {
   EditAddress: { userData: any };
   AllProducts: { products: ProductListParams[] };
   CheckoutScreen: undefined;
-  OrderDetailScreen: { order: Order }; // Định nghĩa kiểu cho OrderDetailScreen
+  OrderDetailScreen: { order: Order }; 
+  WishlistScreen: undefined;
 };
 
 const RootStack = createNativeStackNavigator<RootStackParams>();
@@ -127,6 +129,11 @@ const RootNavigator = () => {
         name="OrderDetailScreen"
         component={OrderDetailScreen}
         options={{ title: 'Order Details' }}
+      />
+        <RootStack.Screen
+        name="WishlistScreen"
+        component={WishlistScreen}
+        options={{ headerShown: false }}
       />
     </RootStack.Navigator>
   );

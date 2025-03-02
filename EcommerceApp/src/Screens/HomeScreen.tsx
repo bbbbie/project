@@ -14,7 +14,6 @@ import { useSelector } from "react-redux";
 import { CartState } from "../TypesCheck/productCartTypes";
 import DisplayMessage from "../Components/HeaderComponent/DisplayMessage";
 import { StyleSheet } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 
 const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
   const cart = useSelector((state: CartState) => state.cart.cart);
@@ -98,7 +97,6 @@ const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
   };
 
   const handleSeeAll = () => {
-    // Nếu có activeCat, truyền sản phẩm của danh mục đó; nếu không, truyền tất cả sản phẩm
     const productsToShow = activeCat ? getProductsByCatID : allProducts;
     navigation.navigate("AllProducts", { products: productsToShow });
   };
@@ -106,10 +104,7 @@ const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       {displayMessage && <DisplayMessage message={message} visible={() => setDisplayMessage(!displayMessage)} />}
-      <LinearGradient
-        colors={["#ff6f61", "#ff9a8b"]}
-        style={styles.headerGradient}
-      >
+      <View style={[styles.headerGradient, { backgroundColor: '#ff6f61' }]}>
         <HeadersComponent
           gotoCartScreen={gotoCartScreen}
           cartLength={cart.length}
@@ -117,7 +112,7 @@ const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
           searchInput={searchInput}
           setSearchInput={setSearchInput}
         />
-      </LinearGradient>
+      </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
         {/* Image Slider */}
@@ -125,7 +120,6 @@ const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
           <ImageSlider images={sliderImages} />
         </View>
 
-        
         <View style={styles.categorySection}>
           <Text style={styles.sectionTitle}>Explore Categories</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
@@ -142,14 +136,14 @@ const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
 
         {/* Products Section */}
         <View style={styles.productsSection}>
-          <LinearGradient colors={["#4facfe", "#00f2fe"]} style={styles.sectionHeader}>
+          <View style={[styles.sectionHeader, { backgroundColor: '#4facfe' }]}>
             <Text style={styles.headerText}>
               {activeCat ? "Category Highlights" : "Featured Products"}
             </Text>
             <Pressable onPress={handleSeeAll}>
               <Text style={styles.seeAll}>View All</Text>
             </Pressable>
-          </LinearGradient>
+          </View>
           <View style={styles.productsContainer}>
             <View style={styles.grid}>
               {filteredProducts.length > 0 ? (
@@ -158,9 +152,9 @@ const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
                     <ProductCard
                       item={{ name: item.name, images: item.images, _id: item._id, price: item.price }}
                       pStyleProps={{
-                        resizeMode: "cover",
+                        resizeMode: "contain", // Thay từ "cover" sang "contain" để hiển thị toàn bộ ảnh
                         width: productWidth,
-                        height: 150,
+                        height: 200, // Tăng chiều cao để phù hợp với máy móc
                         borderRadius: 10,
                       }}
                       productProps={{
@@ -190,9 +184,9 @@ const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
 
         {/* Trending Deals Section */}
         <View style={styles.trendingSection}>
-          <LinearGradient colors={["#ffafbd", "#ffc3a0"]} style={styles.sectionHeader}>
+          <View style={[styles.sectionHeader, { backgroundColor: '#ffafbd' }]}>
             <Text style={styles.headerText}>Trending Deals</Text>
-          </LinearGradient>
+          </View>
           <View style={styles.trendingContainer}>
             <ScrollView
               horizontal
@@ -210,9 +204,9 @@ const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
                       price: item.price || 0,
                     }}
                     pStyleProps={{
-                      resizeMode: "cover",
+                      resizeMode: "contain", // Thay từ "cover" sang "contain"
                       width: productWidth,
-                      height: 150,
+                      height: 200, // Tăng chiều cao
                       borderRadius: 10,
                     }}
                     productProps={{
