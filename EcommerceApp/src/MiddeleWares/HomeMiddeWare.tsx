@@ -16,20 +16,22 @@ interface IProdByCatProps {
 }
 
 interface IAllProductsProps {
-  setAllProducts: React.Dispatch<React.SetStateAction<ProductListParams[]>>; // Định nghĩa kiểu cho setAllProducts
+  setAllProducts: React.Dispatch<React.SetStateAction<ProductListParams[]>>;
 }
+
+const BASE_URL = "http://192.168.1.17:9000"; // Định nghĩa hằng số cho URL cơ sở
 
 export const fetchCategories = async ({ setGetCategory }: ICatProps) => {
   try {
-    const response = await axios.get("http://192.168.1.17:9000/category/getAllCategories");
+    const response = await axios.get(`${BASE_URL}/category/getAllCategories`);
     if (Array.isArray(response.data)) {
       const fixedData = response.data.map((item) => ({
         ...item,
-        images: item.images.map((img: string) => img.replace("http://192.168.1.17", "192.168.1.17")),
+        images: item.images.map((img: string) => img.replace("http://localhost:9000", BASE_URL)),
       }));
       setGetCategory(fixedData);
     } else {
-      console.warn("fetchCategories: Du lieu API khong phai la mang", response.data);
+      console.warn("fetchCategories: Data is not an array", response.data);
       setGetCategory([]);
     }
   } catch (error) {
@@ -40,17 +42,15 @@ export const fetchCategories = async ({ setGetCategory }: ICatProps) => {
 
 export const fetchProductsByCatID = async ({ setGetProductsByCatID, catID }: IProdByCatProps) => {
   try {
-    const response: FetchProductsParams = await axios.get(
-      `http://192.168.1.17:9000/product/getProductByCatID/${catID}`
-    );
+    const response: FetchProductsParams = await axios.get(`${BASE_URL}/product/getProductByCatID/${catID}`);
     if (Array.isArray(response.data)) {
       const fixedData = response.data.map((item) => ({
         ...item,
-        images: item.images.map((img: string) => img.replace("http://192.168.1.17", "http://192.168.1.17")),
+        images: item.images.map((img: string) => img.replace("http://localhost:9000", BASE_URL)),
       }));
       setGetProductsByCatID(fixedData);
     } else {
-      console.warn("fetchProductsByCatID: Dữ liệu API không phải là mảng", response.data);
+      console.warn("fetchProductsByCatID: Data is not an array", response.data);
       setGetProductsByCatID([]);
     }
   } catch (error) {
@@ -61,15 +61,15 @@ export const fetchProductsByCatID = async ({ setGetProductsByCatID, catID }: IPr
 
 export const fetchTrendingProducts = async ({ setTrendingProducts }: ITrendingProductProps) => {
   try {
-    const response: any = await axios.get("http://192.168.1.17:9000/product/getTrendingProducts");
+    const response: any = await axios.get(`${BASE_URL}/product/getTrendingProducts`);
     if (Array.isArray(response.data)) {
       const fixedData = response.data.map((item: any) => ({
         ...item,
-        images: item.images.map((img: string) => img.replace("http://localhost", "http://192.168.1.17")),
+        images: item.images.map((img: string) => img.replace("http://localhost:9000", BASE_URL)),
       }));
       setTrendingProducts(fixedData);
     } else {
-      console.warn("fetchTrendingProducts: Dữ liệu API không phải là mảng", response.data);
+      console.warn("fetchTrendingProducts: Data is not an array", response.data);
       setTrendingProducts([]);
     }
   } catch (error) {
@@ -80,15 +80,15 @@ export const fetchTrendingProducts = async ({ setTrendingProducts }: ITrendingPr
 
 export const fetchAllProducts = async ({ setAllProducts }: IAllProductsProps) => {
   try {
-    const response = await axios.get("http://192.168.1.17:9000/product/getAllProducts");
+    const response = await axios.get(`${BASE_URL}/product/getAllProducts`);
     if (Array.isArray(response.data)) {
       const fixedData = response.data.map((item) => ({
         ...item,
-        images: item.images.map((img:string) => img.replace("http://localhost", "http://192.168.1.17")),
+        images: item.images.map((img: string) => img.replace("http://localhost:9000", BASE_URL)),
       }));
       setAllProducts(fixedData);
     } else {
-      console.warn("fetchAllProducts: Dữ liệu API không phải là mảng", response.data);
+      console.warn("fetchAllProducts: Data is not an array", response.data);
       setAllProducts([]);
     }
   } catch (error) {

@@ -125,7 +125,7 @@ const HomeScreen = ({ navigation }: TabsStackScreenProps<"Home">) => {
           <ImageSlider images={sliderImages} />
         </View>
 
-        {/* Categories Section */}
+        
         <View style={styles.categorySection}>
           <Text style={styles.sectionTitle}>Explore Categories</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>

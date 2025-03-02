@@ -1,16 +1,31 @@
-import React, { useState } from "react";
-import { View, Text, FlatList, StyleSheet, Pressable, SafeAreaView, Dimensions, Platform } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, FlatList, StyleSheet, SafeAreaView, Dimensions, Platform, Pressable, Text } from "react-native";
 import { RootStackScreenProps } from "../Navigation/RootNavigator";
 import { ProductListParams } from "../TypesCheck/HomeProps";
 import { ProductCard } from "../Components/HomeScreenComponents/ProductCard";
 import { LinearGradient } from "expo-linear-gradient";
-import { AntDesign } from "@expo/vector-icons"; // Thêm import icon
+import { HeadersComponent } from "../Components/HeaderComponent/HeaderComponent";
 
 const AllProductsScreen = ({ navigation, route }: RootStackScreenProps<"AllProducts">) => {
   const { products } = route.params;
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(null);
+  const [searchInput, setSearchInput] = useState<string>("");
+  const [filteredProducts, setFilteredProducts] = useState<ProductListParams[]>(products);
 
-  const sortedProducts = [...products].sort((a, b) => {
+  // Lọc sản phẩm theo tìm kiếm
+  useEffect(() => {
+    if (searchInput.trim() === "") {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter((product) =>
+        product.name?.toLowerCase().includes(searchInput.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+    }
+  }, [searchInput, products]);
+
+  // Sắp xếp sản phẩm
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortOrder === "asc") return a.price - b.price;
     if (sortOrder === "desc") return b.price - a.price;
     return 0;
@@ -53,19 +68,24 @@ const AllProductsScreen = ({ navigation, route }: RootStackScreenProps<"AllProdu
     </View>
   );
 
-  const goBack = () => {
-    navigation.goBack(); // Quay lại màn hình trước (HomeScreen)
+  const handleSearch = () => {
+    console.log("Search triggered with query:", searchInput);
+  };
+
+  const gotoPrevious = () => {
+    navigation.goBack();
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient colors={["#ff6f61", "#ff9a8b"]} style={styles.headerGradient}>
-        <View style={styles.headerContent}>
-          <Pressable onPress={goBack} style={styles.backButton}>
-            <AntDesign name="arrowleft" size={24} color="#fff" />
-          </Pressable>
-          <Text style={styles.headerText}>All Products</Text>
-        </View>
+        <HeadersComponent
+        
+          gotoPrevious={gotoPrevious}
+          search={handleSearch}
+          searchInput={searchInput}
+          setSearchInput={setSearchInput}
+        />
       </LinearGradient>
       <View style={styles.filterContainer}>
         <Pressable
@@ -101,19 +121,6 @@ const styles = StyleSheet.create({
   headerGradient: {
     paddingTop: Platform.OS === "android" ? 40 : 0,
     paddingBottom: 10,
-    paddingHorizontal: 15,
-  },
-  headerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  backButton: {
-    marginRight: 15,
-  },
-  headerText: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#fff",
   },
   filterContainer: {
     flexDirection: "row",

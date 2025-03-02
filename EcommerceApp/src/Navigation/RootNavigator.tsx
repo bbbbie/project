@@ -9,10 +9,32 @@ import TabsNavigator, { TabsStackParams } from "./TabsNavigator";
 import ProductDetails from "../Screens/ProductDetails";
 import UserLogin from "../Screens/UserLogin";
 import AdminPanel from "../Screens/AdminPanel";
-import EditPersonalInfo from "../Screens/EditPersonalInfo"; // Thêm
-import EditAddress from "../Screens/EditAddress"; // Thêm
+import EditPersonalInfo from "../Screens/EditPersonalInfo";
+import EditAddress from "../Screens/EditAddress";
+import CheckoutScreen from "../Screens/CheckoutScreen";
 import { ProductListParams } from "../TypesCheck/HomeProps";
 import AllProductsScreen from "../Screens/AllProductsScreen";
+import OrderDetailScreen from "../Screens/OrderDetailScreen";
+
+// Định nghĩa interface cho Order và OrderItem
+interface OrderItem {
+  productId: string;
+  quantity: number;
+  price: number;
+  selectedStorage?: string | null;
+  selectedColor?: string | null;
+}
+
+interface Order {
+  _id: string;
+  userId: string;
+  items: OrderItem[];
+  totalPrice: number;
+  paymentMethod: string;
+  shippingAddress: string;
+  status: string;
+  createdAt: string;
+}
 
 export type RootStackParams = {
   OnboardingScreen: undefined;
@@ -26,7 +48,7 @@ export type RootStackParams = {
     price: number;
     oldPrice?: number;
     inStock?: boolean;
-    color?: string[] | undefined; // Thay đổi thành string[]
+    color?: string[] | undefined;
     storage?: string[] | undefined;
     description?: string;
     quantity: number;
@@ -42,9 +64,11 @@ export type RootStackParams = {
   };
   UserLogin: undefined;
   AdminPanel: undefined;
-  EditPersonalInfo: { userData: any }; // Thêm
-  EditAddress: { userData: any }; // Thêm
-  AllProducts: { products: ProductListParams[] }; 
+  EditPersonalInfo: { userData: any };
+  EditAddress: { userData: any };
+  AllProducts: { products: ProductListParams[] };
+  CheckoutScreen: undefined;
+  OrderDetailScreen: { order: Order }; // Định nghĩa kiểu cho OrderDetailScreen
 };
 
 const RootStack = createNativeStackNavigator<RootStackParams>();
@@ -89,13 +113,22 @@ const RootNavigator = () => {
         component={EditAddress}
         options={{ headerShown: false }}
       />
-       <RootStack.Screen
+      <RootStack.Screen
         name="AllProducts"
         component={AllProductsScreen}
         options={{ headerShown: false }}
       />
+      <RootStack.Screen
+        name="CheckoutScreen"
+        component={CheckoutScreen}
+        options={{ headerShown: false }}
+      />
+      <RootStack.Screen
+        name="OrderDetailScreen"
+        component={OrderDetailScreen}
+        options={{ title: 'Order Details' }}
+      />
     </RootStack.Navigator>
-
   );
 };
 

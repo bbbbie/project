@@ -11,7 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const CartScreen = ({ navigation }: TabsStackScreenProps<'Cart'>) => {
-  const cart = useSelector((state: CartState) => state.cart.cart);
+  const cart = useSelector((state: CartState) => state.cart.cart || []);
   const dispatch = useDispatch();
   const [message, setMessage] = useState('');
   const [displayMessage, setDisplayMessage] = useState<boolean>(false);
@@ -26,8 +26,8 @@ const CartScreen = ({ navigation }: TabsStackScreenProps<'Cart'>) => {
     setTimeout(() => setDisplayMessage(false), 3000);
   };
 
-  const handleRemoveItem = (item: string) => { // Sửa payload để nhận ProductListParams thay vì chỉ _id
-    dispatch(removeFromCart(item)); // Truyền toàn bộ item để kiểm tra cấu hình
+  const handleRemoveItem = (item: ProductListParams) => {
+    dispatch(removeFromCart(item)); // Truyền toàn bộ item
     setMessage('Item removed from cart.');
     setDisplayMessage(true);
     setTimeout(() => setDisplayMessage(false), 3000);
@@ -48,11 +48,11 @@ const CartScreen = ({ navigation }: TabsStackScreenProps<'Cart'>) => {
       setTimeout(() => setDisplayMessage(false), 3000);
       return;
     }
-
+  
     try {
       const token = await AsyncStorage.getItem('token');
       if (token) {
-        console.log('User is logged in. Proceed to buy logic can be added here.');
+        navigation.navigate('CheckoutScreen'); // Chuyển sang CheckoutScreen
       } else {
         navigation.navigate('UserLogin');
       }
@@ -68,16 +68,14 @@ const CartScreen = ({ navigation }: TabsStackScreenProps<'Cart'>) => {
       style={styles.cartItem}
     >
       <Image
-        source={{ uri: item.images[0] || 'https://via.placeholder.com/100' }}
+        source={{ uri: item.images && item.images.length > 0 ? item.images[0] : 'https://via.placeholder.com/100' }}
         style={styles.itemImage}
       />
       <View style={styles.itemDetails}>
         <Text style={styles.itemName}>{item.name}</Text>
-        {/* Hiển thị Storage nếu có */}
         {item.selectedStorage && (
           <Text style={styles.itemOption}>Storage: {item.selectedStorage}</Text>
         )}
-        {/* Hiển thị Color nếu có */}
         {item.selectedColor && (
           <Text style={styles.itemOption}>Color: {item.selectedColor}</Text>
         )}
@@ -104,7 +102,7 @@ const CartScreen = ({ navigation }: TabsStackScreenProps<'Cart'>) => {
           colors={['#ef4444', '#dc2626']}
           style={styles.removeButton}
         >
-          <Pressable onPress={() => handleRemoveItem(item._id)}>
+          <Pressable onPress={() => handleRemoveItem(item)}>
             <Text style={styles.removeButtonText}>Remove</Text>
           </Pressable>
         </LinearGradient>
@@ -140,7 +138,7 @@ const CartScreen = ({ navigation }: TabsStackScreenProps<'Cart'>) => {
             renderItem={renderCartItem}
             keyExtractor={(item) => 
               `${item._id}-${item.selectedStorage || ''}-${item.selectedColor || ''}`
-            } // Key duy nhất dựa trên _id, storage, và color
+            }
             contentContainerStyle={styles.cartList}
             showsVerticalScrollIndicator={false}
           />
@@ -253,9 +251,9 @@ const styles = StyleSheet.create({
     color: '#1F2937',
     marginBottom: 5,
   },
-  itemOption: { // Style mới cho storage và color
+  itemOption: {
     fontSize: 14,
-    color: '#6B7280', // Đồng bộ với itemPrice để giữ thiết kế đẹp
+    color: '#6B7280',
     marginBottom: 5,
   },
   itemPrice: {

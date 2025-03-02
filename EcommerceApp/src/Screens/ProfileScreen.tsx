@@ -6,6 +6,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { useFocusEffect } from '@react-navigation/native';
+import { useDispatch } from 'react-redux'; // Thêm để sử dụng Redux
+import { clearCart } from '../redux/CartReducer'; // Thêm để gọi action clearCart (đảm bảo đường dẫn đúng)
 
 interface UserData {
   id: string;
@@ -19,8 +21,9 @@ interface UserData {
 
 const ProfileScreen = ({ navigation }: TabsStackScreenProps<'Profile'>) => {
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [avatar, setAvatar] = useState<string>('https://via.placeholder.com/150'); // Giá trị mặc định ban đầu
+  const [avatar, setAvatar] = useState<string>('https://via.placeholder.com/150');
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch(); // Khởi tạo dispatch để gọi action Redux
 
   const BACKEND_URL = 'http://192.168.1.17:9000/users';
 
@@ -53,7 +56,6 @@ const ProfileScreen = ({ navigation }: TabsStackScreenProps<'Profile'>) => {
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
-      // Chỉ hiển thị lỗi nếu không có userData
       if (!userData) {
         Alert.alert('Error', 'Failed to load profile.');
       }
@@ -129,6 +131,7 @@ const ProfileScreen = ({ navigation }: TabsStackScreenProps<'Profile'>) => {
     try {
       await AsyncStorage.removeItem('token');
       await AsyncStorage.removeItem('userData');
+      dispatch(clearCart()); // Thêm này để xóa giỏ hàng khi đăng xuất
       Alert.alert('Success', 'You have been logged out.');
       navigation.navigate('UserLogin');
     } catch (error) {
